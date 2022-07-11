@@ -131,6 +131,12 @@ namespace WorldBuilder
 
           prm.declare_entry("ridge coordinates", Types::Array(Types::Point<2>(), 2),
                             "A list of 2d points which define the location of the ridge.");
+          
+          prm.declare_entry("use plate model as reference", Types::Bool(false),
+                            "Whether the plate model should be used as the reference thermal model for the slab. If this is false, the half-space"
+                            "coolling model will be used instead.");
+          // prm.declare_entry("max depth in plate model", Types::Double(std::numeric_limits<double>::max()),
+          //                  "The depth in meters to which the temperature of the plage model feature is present.");
         }
 
         void
@@ -178,6 +184,7 @@ namespace WorldBuilder
             {
               ridge_coordinate *= dtr;
             }
+          use_plate_model = prm.get<bool>("use plate model as reference");
         }
 
         double
@@ -194,6 +201,7 @@ namespace WorldBuilder
           const double distance_from_plane = distance_from_planes.distance_from_plane;
           const double distance_along_plane = distance_from_planes.distance_along_plane;
           const double total_segment_length = additional_parameters.total_local_segment_length;
+          const int sommation_number = 100; // for the plate model
 
           if (distance_from_plane <= max_depth && distance_from_plane >= min_depth)
             {
@@ -237,15 +245,35 @@ namespace WorldBuilder
                   distance_ridge = std::min(distance_ridge, this->world->parameters.coordinate_system->distance_between_points_at_same_depth(Point<3>(trench_point_natural.get_coordinates(),trench_point_natural.get_coordinate_system()), compare_point));
                 }
 
-              const double age_at_trench = distance_ridge / plate_velocity; // yr
+              const double age_at_trench = distance_ridge / plate_velocity; // yr, haoyuan: todo_maximum
 
               const double seconds_in_year = 60.0 * 60.0 * 24.0 * 365.25;
               const double plate_age_sec = age_at_trench * seconds_in_year; // y --> seconds
 
               // 1. Determine initial heat content of the slab based on age of plate at trench
               //    This uses the integral of the half-space temperature profile
-              double initial_heat_content = 2 * thermal_conductivity * (surface_temperature - potential_mantle_temperature) *
+              double initial_heat_content;
+              if (use_plate_model)
+              {
+                initial_heat_content = (surface_temperature - potential_mantle_temperature) * max_depth / 2.0;
+                for (int i = 1; i< std::floor(sommation_number/2.0); ++i){
+                  // because n < sommation_number + 1 and n = 2k + 1
+                  // The "plate_velocity" instead of "plate_velocity_UI" is used for the last instance as "age_at_trench" has
+                  // a unit of yr.
+                  const double plate_velocity_UI = plate_velocity / seconds_in_year;
+                  initial_heat_content -= (surface_temperature - potential_mantle_temperature) *
+                                        (4 / double(2*i + 1) / double(2*i + 1) / const_pi / const_pi * 
+                                        exp((plate_velocity_UI * max_depth / 2 / thermal_diffusivity - 
+                                          std::sqrt(plate_velocity_UI * plate_velocity_UI * max_depth * max_depth / 4.0 / thermal_diffusivity / thermal_diffusivity + 
+                                            double(2*i + 1) * double(2*i + 1) * const_pi * const_pi)) *
+                                          plate_velocity * age_at_trench / max_depth));
+                }
+              }
+              else
+              {
+                initial_heat_content = 2 * thermal_conductivity * (surface_temperature - potential_mantle_temperature) *
                                             std::sqrt(plate_age_sec / (thermal_diffusivity * const_pi));
+              }
 
               //  2. Get Tmin and distance_offset given distance along slab and depth of point on the slab.
               //  These equations are empirical based on fitting the temperature profiles from dynamic subduction models.
@@ -337,9 +365,24 @@ namespace WorldBuilder
                     {
                       effective_plate_age = effective_plate_age * (total_segment_length - distance_along_plane)/ (taper_distance);
                     }
-
-                  const double bottom_heat_content = 2 * thermal_conductivity * (min_temperature - potential_mantle_temperature) *
-                                                     std::sqrt(effective_plate_age /(thermal_diffusivity * const_pi));
+                  double bottom_heat_content;
+                  if (use_plate_model){
+                    bottom_heat_content = (min_temperature - potential_mantle_temperature) * max_depth / 2.0;
+                    for (int i = 1; i< std::floor(sommation_number/2.0); ++i){
+                    // because n < sommation_number + 1 and n = 2k + 1
+                    const double plate_velocity_UI = plate_velocity / seconds_in_year;
+                    bottom_heat_content -= (min_temperature - potential_mantle_temperature) *
+                                        (4 / double(2*i + 1) / double(2*i + 1) / const_pi / const_pi * 
+                                        exp((plate_velocity_UI * max_depth / 2 / thermal_diffusivity - 
+                                          std::sqrt(plate_velocity_UI * plate_velocity_UI * max_depth * max_depth / 4.0 / thermal_diffusivity / thermal_diffusivity + 
+                                            double(2*i + 1) * double(2*i + 1) * const_pi * const_pi)) *
+                                          plate_velocity_UI * effective_plate_age / max_depth));
+                    }
+                  }
+                  else{
+                    bottom_heat_content = 2 * thermal_conductivity * (min_temperature - potential_mantle_temperature) *
+                                          std::sqrt(effective_plate_age /(thermal_diffusivity * const_pi));
+                  }
 
                   // 4. The difference in heat content goes into the temperature above where Tmin occurs.
                   double top_heat_content = initial_heat_content - bottom_heat_content;
@@ -373,9 +416,32 @@ namespace WorldBuilder
                     }
                   else
                     {
-                      // use half-space cooling model for the bottom (side 1) of the slab
-                      temperature = background_temperature + (min_temperature - background_temperature) *
+                      if (use_plate_model){
+                        if (adjusted_distance < max_depth)
+                        {
+                          temperature = background_temperature + (min_temperature - background_temperature) * 
+                                        (1 - adjusted_distance / max_depth);
+                          
+                          for (int i = 1; i<sommation_number+1; ++i)
+                          {
+                            const double plate_velocity_UI = plate_velocity / seconds_in_year;
+                            temperature = temperature - (min_temperature - background_temperature) *
+                                  ((2 / (double(i) * const_pi)) * std::sin((double(i) * const_pi * adjusted_distance) / max_depth) *
+                                   std::exp((((plate_velocity_UI * max_depth)/(2 * thermal_diffusivity)) -
+                                             std::sqrt(((plate_velocity_UI*plate_velocity_UI*max_depth*max_depth) /
+                                                        (4*thermal_diffusivity*thermal_diffusivity)) + double(i) * double(i) * const_pi * const_pi)) *
+                                            ((plate_velocity_UI * effective_plate_age) / max_depth)));
+                          } 
+                        }
+                        else{
+                          temperature = background_temperature;
+                        }
+                      }
+                      else{
+                        // use half-space cooling model for the bottom (side 1) of the slab
+                        temperature = background_temperature + (min_temperature - background_temperature) *
                                     std::erfc(adjusted_distance / (2 * std::sqrt(thermal_diffusivity * effective_plate_age)));
+                      }
                     }
                 }
               else

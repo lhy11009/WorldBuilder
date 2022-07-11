@@ -110,6 +110,7 @@ namespace WorldBuilder
             bool adiabatic_heating;
             std::vector<Point<2>> ridge_coordinates;
             Utilities::Operations operation;
+            bool use_plate_model;  // todo_plate
 
         };
       } // namespace Temperature
