@@ -9130,6 +9130,14 @@
 
 ::::::::::::::
 
+::::::::::::::{dropdown} /features/items/oneOf/5/segments/items/temperature models/items/oneOf/3/reference model name
+:name: closed_features_items_oneOf_5_segments_items_temperature-models_items_oneOf_3_reference-model-name
+
+- **default value**:half space model
+- **type**:string
+- **documentation**:The type of thermal model to use in the mass conserving model of slab temperature. Options are half space model and plate model
+::::::::::::::
+
 
 
 :::::::::::::::
@@ -9972,6 +9980,14 @@
 
 :::::::::::::::
 
+::::::::::::::::
+
+::::::::::::::::{dropdown} /features/items/oneOf/5/temperature models/items/oneOf/3/reference model name
+:name: closed_features_items_oneOf_5_temperature-models_items_oneOf_3_reference-model-name
+
+- **default value**:half space model
+- **type**:string
+- **documentation**:The type of thermal model to use in the mass conserving model of slab temperature. Options are half space model and plate model
 ::::::::::::::::
 
 
@@ -10922,6 +10938,14 @@
 
 ::::::::::::
 
+::::::::::::{dropdown} /features/items/oneOf/5/sections/items/segments/items/temperature models/items/oneOf/3/reference model name
+:name: closed_features_items_oneOf_5_sections_items_segments_items_temperature-models_items_oneOf_3_reference-model-name
+
+- **default value**:half space model
+- **type**:string
+- **documentation**:The type of thermal model to use in the mass conserving model of slab temperature. Options are half space model and plate model
+::::::::::::
+
 
 
 :::::::::::::
@@ -11764,6 +11788,14 @@
 
 :::::::::::::
 
+::::::::::::::
+
+::::::::::::::{dropdown} /features/items/oneOf/5/sections/items/temperature models/items/oneOf/3/reference model name
+:name: closed_features_items_oneOf_5_sections_items_temperature-models_items_oneOf_3_reference-model-name
+
+- **default value**:half space model
+- **type**:string
+- **documentation**:The type of thermal model to use in the mass conserving model of slab temperature. Options are half space model and plate model
 ::::::::::::::
 
 
