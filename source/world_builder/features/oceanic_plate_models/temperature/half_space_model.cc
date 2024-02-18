@@ -160,7 +160,7 @@ namespace WorldBuilder
                                                             this->world->specific_heat) * depth);
                     }
 
-                  std::pair<double, double> ridge_parameters = Utilities::calculate_ridge_distance_and_spreading(mid_oceanic_ridges,
+                  std::vector<double> ridge_parameters = Utilities::calculate_ridge_distance_and_spreading(mid_oceanic_ridges,
                                                                spreading_velocities_at_each_ridge_point,
                                                                world->parameters.coordinate_system,
                                                                position_in_natural_coordinates_at_min_depth);
@@ -168,7 +168,7 @@ namespace WorldBuilder
 
 
                   const double thermal_diffusivity = this->world->thermal_diffusivity;
-                  const double age = ridge_parameters.second / ridge_parameters.first;
+                  const double age = ridge_parameters[1] / ridge_parameters[0];
 
                   double  temperature = bottom_temperature_local;
 
@@ -178,12 +178,12 @@ namespace WorldBuilder
                            << ". Relevant variables: bottom_temperature_local = " << bottom_temperature_local
                            << ", top_temperature = " << top_temperature
                            << ", max_depth = " << max_depth
-                           << ", spreading_velocity = " << ridge_parameters.first
+                           << ", spreading_velocity = " << ridge_parameters[0]
                            << ", thermal_diffusivity = " << thermal_diffusivity
                            << ", age = " << age << '.');
                   WBAssert(std::isfinite(temperature), "Temperature inside half-space cooling model is not a finite: " << temperature                           << ". Relevant variables: bottom_temperature_local = " << bottom_temperature_local
                            << ", top_temperature = " << top_temperature
-                           << ", spreading_velocity = " << ridge_parameters.first
+                           << ", spreading_velocity = " << ridge_parameters[0]
                            << ", thermal_diffusivity = " << thermal_diffusivity
                            << ", age = " << age << '.');
 

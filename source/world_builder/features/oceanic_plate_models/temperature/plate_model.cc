@@ -158,13 +158,13 @@ namespace WorldBuilder
 
                   const int summation_number = 100;
 
-                  std::pair<double, double> ridge_parameters = Utilities::calculate_ridge_distance_and_spreading(mid_oceanic_ridges,
+                  std::vector<double> ridge_parameters = Utilities::calculate_ridge_distance_and_spreading(mid_oceanic_ridges,
                                                                spreading_velocities_at_each_ridge_point,
                                                                world->parameters.coordinate_system,
                                                                position_in_natural_coordinates_at_min_depth);
 
                   const double thermal_diffusivity = this->world->thermal_diffusivity;
-                  const double age = ridge_parameters.second / ridge_parameters.first;
+                  const double age = ridge_parameters[1] / ridge_parameters[0];
                   double temperature = top_temperature + (bottom_temperature_local - top_temperature) * (depth / max_depth);
 
                   // This formula addresses the horizontal heat transfer by having the spreading velocity and distance to the ridge in it.
@@ -173,10 +173,10 @@ namespace WorldBuilder
                     {
                       temperature = temperature + (bottom_temperature_local - top_temperature) *
                                     ((2 / (double(i) * Consts::PI)) * std::sin((double(i) * Consts::PI * depth) / max_depth) *
-                                     std::exp((((ridge_parameters.first * max_depth)/(2 * thermal_diffusivity)) -
-                                               std::sqrt(((ridge_parameters.first*ridge_parameters.first*max_depth*max_depth) /
+                                     std::exp((((ridge_parameters[0] * max_depth)/(2 * thermal_diffusivity)) -
+                                               std::sqrt(((ridge_parameters[0]*ridge_parameters[0]*max_depth*max_depth) /
                                                           (4*thermal_diffusivity*thermal_diffusivity)) + double(i) * double(i) * Consts::PI * Consts::PI)) *
-                                              ((ridge_parameters.first * age) / max_depth)));
+                                              ((ridge_parameters[0] * age) / max_depth)));
 
                     }
 
@@ -184,12 +184,12 @@ namespace WorldBuilder
                            << ". Relevant variables: bottom_temperature_local = " << bottom_temperature_local
                            << ", top_temperature = " << top_temperature
                            << ", max_depth = " << max_depth
-                           << ", spreading_velocity = " << ridge_parameters.first
+                           << ", spreading_velocity = " << ridge_parameters[0]
                            << ", thermal_diffusivity = " << thermal_diffusivity
                            << ", age = " << age << '.');
                   WBAssert(std::isfinite(temperature), "Temperature inside plate model is not a finite: " << temperature                           << ". Relevant variables: bottom_temperature_local = " << bottom_temperature_local
                            << ", top_temperature = " << top_temperature
-                           << ", spreading_velocity = " << ridge_parameters.first
+                           << ", spreading_velocity = " << ridge_parameters[0]
                            << ", thermal_diffusivity = " << thermal_diffusivity
                            << ", age = " << age << '.');
 

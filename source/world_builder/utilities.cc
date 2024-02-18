@@ -1270,15 +1270,17 @@ namespace WorldBuilder
     template std::array<double,3> convert_point_to_array<3>(const Point<3> &point_);
 
 
-    std::pair<double, double>
+    std::vector<double>
     calculate_ridge_distance_and_spreading(std::vector<std::vector<Point<2>>> mid_oceanic_ridges,
                                            std::vector<std::vector<double>> mid_oceanic_spreading_velocities,
                                            const std::unique_ptr<WorldBuilder::CoordinateSystems::Interface> &coordinate_system,
-                                           const Objects::NaturalCoordinate &position_in_natural_coordinates_at_min_depth)
+                                           const Objects::NaturalCoordinate &position_in_natural_coordinates_at_min_depth,
+                                           std::vector<std::vector<double>> subducting_plate_velocities)
     {
 
       double distance_ridge = std::numeric_limits<double>::max();
       double spreading_velocity_at_ridge = 0;
+      double subducting_velocity_at_trench = 0;
 
       // first find if the coordinate is on this side of a ridge
       unsigned int relevant_ridge = 0;
@@ -1292,7 +1294,7 @@ namespace WorldBuilder
         }
 
       // if there is only one ridge, there is no transform
-      if (mid_oceanic_ridges.size() > 1)
+      if (mid_oceanic_ridges[0].size() > 1)
         {
           // There are more than one ridge, so there are transform faults
           // Find the first which is on the same side
@@ -1330,6 +1332,9 @@ namespace WorldBuilder
           const double spreading_velocity_point0 = mid_oceanic_spreading_velocities[relevant_ridge][i_coordinate];
           const double spreading_velocity_point1 = mid_oceanic_spreading_velocities[relevant_ridge][i_coordinate + 1];
 
+          const double subducting_velocity_point0 = subducting_plate_velocities[relevant_ridge][i_coordinate];
+          const double subducting_velocity_point1 = subducting_plate_velocities[relevant_ridge][i_coordinate + 1];
+
           {
             // based on http://geomalgorithms.com/a02-_lines.html
             const Point<2> v = segment_point1 - segment_point0;
@@ -1349,16 +1354,19 @@ namespace WorldBuilder
               {
                 Pb1=segment_point0;
                 spreading_velocity_at_ridge = spreading_velocity_point0;
+                subducting_velocity_at_trench = subducting_velocity_point0;
               }
             else if (c <= c1)
               {
                 Pb1=segment_point1;
                 spreading_velocity_at_ridge = spreading_velocity_point1;
+                subducting_velocity_at_trench = subducting_velocity_point1;
               }
             else
               {
                 Pb1=segment_point0 + (c1 / c) * v;
                 spreading_velocity_at_ridge = spreading_velocity_point0 + (spreading_velocity_point1 - spreading_velocity_point0) * (c1 / c);
+                subducting_velocity_at_trench = subducting_velocity_point0 + (subducting_velocity_point1 - subducting_velocity_point0) * (c1 / c);
               }
 
             Point<2> Pb2(coordinate_system->natural_coordinate_system());
@@ -1366,16 +1374,19 @@ namespace WorldBuilder
               {
                 Pb2=segment_point0;
                 spreading_velocity_at_ridge = spreading_velocity_point0;
+                subducting_velocity_at_trench = subducting_velocity_point0;
               }
             else if (c <= c2)
               {
                 Pb2=segment_point1;
                 spreading_velocity_at_ridge = spreading_velocity_point1;
+                subducting_velocity_at_trench = spreading_velocity_point1;
               }
             else
               {
                 Pb2=segment_point0 + (c1 / c) * v;
                 spreading_velocity_at_ridge = spreading_velocity_point0 + (spreading_velocity_point1 - spreading_velocity_point0) * (c1 / c);
+                subducting_velocity_at_trench = subducting_velocity_point0 + (subducting_velocity_point1 - subducting_velocity_point0) * (c1 / c);
               }
 
             Point<3> compare_point1(coordinate_system->natural_coordinate_system());
@@ -1400,11 +1411,13 @@ namespace WorldBuilder
                                           compare_point2));
           }
         }
-      std::pair<double, double> result;
-      result.first = spreading_velocity_at_ridge / 31557600; // m/s;
-      result.second = distance_ridge;
+      std::vector<double> result;
+      result.push_back(spreading_velocity_at_ridge / 31557600); // m/s
+      result.push_back(distance_ridge);
+      result.push_back(subducting_velocity_at_trench / 31557600); // m/s
       return result;
     }
+
   } // namespace Utilities
 } // namespace WorldBuilder
 
