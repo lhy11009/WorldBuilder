@@ -115,6 +115,8 @@ namespace WorldBuilder
       template<class T>
       std::vector<T> get_vector(const std::string &name);
 
+      std::vector<std::vector<double>> get_vector_or_double(const std::string &name);
+
       /**
        * A specialized version of get which can return a value at points type.
        * \param name The name of the entry to retrieved

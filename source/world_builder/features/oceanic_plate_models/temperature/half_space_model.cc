@@ -84,7 +84,7 @@ namespace WorldBuilder
                             "in degree Kelvin for this feature. If the model has an adiabatic gradient"
                             "this should be the mantle potential temperature, and T = Tad + Thalf. ");
 
-          prm.declare_entry("spreading velocity", Types::OneOf(Types::Double(0.01),Types::Array(Types::ValueAtPoints(0.01, std::numeric_limits<uint64_t>::max()))),
+          prm.declare_entry("spreading velocity", Types::OneOf(Types::Double(0.05),Types::Array(Types::ValueAtPoints(0.05, std::numeric_limits<size_t>::max()))),
                             "The spreading velocity of the plate in meter per year. "
                             "This is the velocity with which one side moves away from the ridge.");
 
@@ -123,7 +123,7 @@ namespace WorldBuilder
               for (unsigned int index_y = 0; index_y < mid_oceanic_ridges[index_x].size(); index_y++)
                 {
                   if (spreading_velocities.second.size() <= 1)
-                    spreading_rates_for_ridge.push_back(spreading_velocities.first[0]);
+                    spreading_rates_for_ridge.push_back(spreading_velocities.second[0]);
                   else
                     spreading_rates_for_ridge.push_back(spreading_velocities.second[ridge_point_index]);
                   ridge_point_index += 1;
@@ -161,9 +161,9 @@ namespace WorldBuilder
                     }
 
                   std::vector<double> ridge_parameters = Utilities::calculate_ridge_distance_and_spreading(mid_oceanic_ridges,
-                                                               spreading_velocities_at_each_ridge_point,
-                                                               world->parameters.coordinate_system,
-                                                               position_in_natural_coordinates_at_min_depth);
+                                                         spreading_velocities_at_each_ridge_point,
+                                                         world->parameters.coordinate_system,
+                                                         position_in_natural_coordinates_at_min_depth);
 
 
 

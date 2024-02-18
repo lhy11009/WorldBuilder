@@ -1275,12 +1275,14 @@ namespace WorldBuilder
                                            std::vector<std::vector<double>> mid_oceanic_spreading_velocities,
                                            const std::unique_ptr<WorldBuilder::CoordinateSystems::Interface> &coordinate_system,
                                            const Objects::NaturalCoordinate &position_in_natural_coordinates_at_min_depth,
-                                           std::vector<std::vector<double>> subducting_plate_velocities)
+                                           std::vector<std::vector<double>> subducting_plate_velocities,
+                                           std::vector<double> ridge_migration_times)
     {
 
       double distance_ridge = std::numeric_limits<double>::max();
       double spreading_velocity_at_ridge = 0;
       double subducting_velocity_at_trench = 0;
+      double ridge_migration_time = 0;
 
       // first find if the coordinate is on this side of a ridge
       unsigned int relevant_ridge = 0;
@@ -1289,9 +1291,7 @@ namespace WorldBuilder
 
       Point<2> other_check_point = check_point;
       if (check_point.get_coordinate_system() == CoordinateSystem::spherical)
-        {
-          other_check_point[0] += check_point[0] < 0 ? 2.0 * WorldBuilder::Consts::PI : -2.0 * WorldBuilder::Consts::PI;
-        }
+        other_check_point[0] += check_point[0] < 0 ? 2.0 * WorldBuilder::Consts::PI : -2.0 * WorldBuilder::Consts::PI;
 
       // if there is only one ridge, there is no transform
       if (mid_oceanic_ridges[0].size() > 1)
@@ -1303,7 +1303,6 @@ namespace WorldBuilder
               const Point<2> transform_point_0 = mid_oceanic_ridges[relevant_ridge+1][0];
               const Point<2> transform_point_1 = mid_oceanic_ridges[relevant_ridge][mid_oceanic_ridges[relevant_ridge].size()-1];
               const Point<2> reference_point   = mid_oceanic_ridges[relevant_ridge][0];
-
               const bool reference_on_side_of_line = (transform_point_1[0] - transform_point_0[0])
                                                      * (reference_point[1] - transform_point_0[1])
                                                      - (transform_point_1[1] - transform_point_0[1])
@@ -1332,8 +1331,17 @@ namespace WorldBuilder
           const double spreading_velocity_point0 = mid_oceanic_spreading_velocities[relevant_ridge][i_coordinate];
           const double spreading_velocity_point1 = mid_oceanic_spreading_velocities[relevant_ridge][i_coordinate + 1];
 
-          const double subducting_velocity_point0 = subducting_plate_velocities[relevant_ridge][i_coordinate];
-          const double subducting_velocity_point1 = subducting_plate_velocities[relevant_ridge][i_coordinate + 1];
+          double subducting_velocity_point0 = subducting_plate_velocities[0][0];
+          double subducting_velocity_point1 = subducting_plate_velocities[0][0];
+
+          ridge_migration_time = ridge_migration_times[relevant_ridge];
+
+          if (subducting_plate_velocities[relevant_ridge].size() > 1)
+            {
+              subducting_velocity_point0 = subducting_plate_velocities[relevant_ridge][i_coordinate];
+              subducting_velocity_point1 = subducting_plate_velocities[relevant_ridge][i_coordinate + 1];
+            }
+
 
           {
             // based on http://geomalgorithms.com/a02-_lines.html
@@ -1415,6 +1423,7 @@ namespace WorldBuilder
       result.push_back(spreading_velocity_at_ridge / 31557600); // m/s
       result.push_back(distance_ridge);
       result.push_back(subducting_velocity_at_trench / 31557600); // m/s
+      result.push_back(ridge_migration_time);
       return result;
     }
 

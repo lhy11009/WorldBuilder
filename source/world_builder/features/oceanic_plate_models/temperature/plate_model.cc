@@ -78,7 +78,7 @@ namespace WorldBuilder
           prm.declare_entry("bottom temperature", Types::Double(-1),
                             "The temperature in degree Kelvin which this feature should have");
 
-          prm.declare_entry("spreading velocity", Types::OneOf(Types::Double(0.01),Types::Array(Types::ValueAtPoints(0.01, std::numeric_limits<uint64_t>::max()))),
+          prm.declare_entry("spreading velocity", Types::OneOf(Types::Double(0.05),Types::Array(Types::ValueAtPoints(0.05, std::numeric_limits<size_t>::max()))),
                             "The spreading velocity of the plate in meter per year. "
                             "This is the velocity with which one side moves away from the ridge.");
 
@@ -118,7 +118,7 @@ namespace WorldBuilder
               for (unsigned int index_y = 0; index_y < mid_oceanic_ridges[index_x].size(); index_y++)
                 {
                   if (spreading_velocities.second.size() <= 1)
-                    spreading_rates_for_ridge.push_back(spreading_velocities.first[0]);
+                    spreading_rates_for_ridge.push_back(spreading_velocities.second[0]);
                   else
                     spreading_rates_for_ridge.push_back(spreading_velocities.second[ridge_point_index]);
                   ridge_point_index += 1;
@@ -159,9 +159,9 @@ namespace WorldBuilder
                   const int summation_number = 100;
 
                   std::vector<double> ridge_parameters = Utilities::calculate_ridge_distance_and_spreading(mid_oceanic_ridges,
-                                                               spreading_velocities_at_each_ridge_point,
-                                                               world->parameters.coordinate_system,
-                                                               position_in_natural_coordinates_at_min_depth);
+                                                         spreading_velocities_at_each_ridge_point,
+                                                         world->parameters.coordinate_system,
+                                                         position_in_natural_coordinates_at_min_depth);
 
                   const double thermal_diffusivity = this->world->thermal_diffusivity;
                   const double age = ridge_parameters[1] / ridge_parameters[0];
