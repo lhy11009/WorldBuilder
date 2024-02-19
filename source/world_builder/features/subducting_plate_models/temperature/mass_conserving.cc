@@ -120,14 +120,9 @@ namespace WorldBuilder
           prm.declare_entry("plate velocity", Types::OneOf(Types::Double(0.05),Types::Array(Types::ValueAtPoints(0.05, std::numeric_limits<size_t>::max()))),
                             "The velocity with which the plate subducts in meters per year. Default is 5 cm/yr");
 
-          // prm.declare_entry("subducting velocity", Types::OneOf(Types::Double(-1.0),Types::Array(Types::ValueAtPoints(-1.0, std::numeric_limits<size_t>::max()))),
-          //                   "The velocity with which the ridge is moving through time, and how long the ridge "
-          //                   "has been moving. First value is the velocity, second is the time. Default is [0 cm/yr, 0 yr]");
-
-          prm.declare_entry("subducting velocity", Types::OneOf(Types::Double(-1.0), Types::Array(Types::Array(Types::Double(-1.0), 1), 1)),
+          prm.declare_entry("subducting velocity", Types::OneOf(Types::Double(0.0), Types::Array(Types::Array(Types::Double(0.0), 1), 1)),
                             "The velocity with which the ridge is moving through time, and how long the ridge "
                             "has been moving. First value is the velocity, second is the time. Default is [0 cm/yr, 0 yr]");
-
 
           prm.declare_entry("coupling depth", Types::Double(100e3),
                             "The depth at which the slab surface first comes in contact with the hot mantle wedge "
@@ -235,10 +230,14 @@ namespace WorldBuilder
               std::vector<double> ridge_spreading_velocities_for_ridge;
               for (unsigned int index_y = 0; index_y < mid_oceanic_ridges[index_x].size(); index_y++)
                 {
-                  if (ridge_spreading_velocities.second.size() < 1)
+                  if (ridge_spreading_velocities.second.size() == 1)
+                    {
                       ridge_spreading_velocities_for_ridge.push_back(ridge_spreading_velocities.second[0]);
+                    }
                   else
+                    {
                       ridge_spreading_velocities_for_ridge.push_back(ridge_spreading_velocities.second[ridge_point_index]);
+                    }
                   ridge_point_index += 1;
                 }
               ridge_spreading_velocities_at_each_ridge_point.push_back(ridge_spreading_velocities_for_ridge);
@@ -313,7 +312,7 @@ namespace WorldBuilder
                     }
                 }
 
-              const double age_at_trench = ridge_parameters[1] / spreading_velocity + trench_age_shift; // m/(m/y) = yr
+              const double age_at_trench = ridge_parameters[1] / spreading_velocity + trench_age_shift * 0; // m/(m/y) = yr
               const double plate_age_sec = age_at_trench * seconds_in_year; // y --> seconds
               // 1. Determine initial heat content of the slab based on age of plate at trench
               // This uses the integral of the half-space temperature profile

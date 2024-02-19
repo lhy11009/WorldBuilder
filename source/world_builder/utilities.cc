@@ -1335,13 +1335,14 @@ namespace WorldBuilder
           double subducting_velocity_point1 = subducting_plate_velocities[0][0];
 
           ridge_migration_time = ridge_migration_times[relevant_ridge];
+          unsigned int test = subducting_plate_velocities[relevant_ridge].size();
 
-          if (subducting_plate_velocities[relevant_ridge].size() > 1)
-            {
-              subducting_velocity_point0 = subducting_plate_velocities[relevant_ridge][i_coordinate];
-              subducting_velocity_point1 = subducting_plate_velocities[relevant_ridge][i_coordinate + 1];
-            }
-
+          // if (test > 1) //std::vector<double> {0})
+          if (subducting_plate_velocities != std::vector<std::vector<double>> {{0}})
+          {
+            subducting_velocity_point0 = subducting_plate_velocities[relevant_ridge][i_coordinate];
+            subducting_velocity_point1 = subducting_plate_velocities[relevant_ridge][i_coordinate + 1];
+          }
 
           {
             // based on http://geomalgorithms.com/a02-_lines.html

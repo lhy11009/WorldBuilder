@@ -123,9 +123,13 @@ namespace WorldBuilder
               for (unsigned int index_y = 0; index_y < mid_oceanic_ridges[index_x].size(); index_y++)
                 {
                   if (spreading_velocities.second.size() <= 1)
-                    spreading_rates_for_ridge.push_back(spreading_velocities.second[0]);
+                    {
+                      spreading_rates_for_ridge.push_back(spreading_velocities.second[0]);
+                    }
                   else
-                    spreading_rates_for_ridge.push_back(spreading_velocities.second[ridge_point_index]);
+                    {
+                      spreading_rates_for_ridge.push_back(spreading_velocities.second[ridge_point_index]);
+                    }
                   ridge_point_index += 1;
                 }
               spreading_velocities_at_each_ridge_point.push_back(spreading_rates_for_ridge);
