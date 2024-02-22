@@ -1335,9 +1335,7 @@ namespace WorldBuilder
           double subducting_velocity_point1 = subducting_plate_velocities[0][0];
 
           ridge_migration_time = ridge_migration_times[relevant_ridge];
-          unsigned int test = subducting_plate_velocities[relevant_ridge].size();
 
-          // if (test > 1) //std::vector<double> {0})
           if (subducting_plate_velocities != std::vector<std::vector<double>> {{0}})
           {
             subducting_velocity_point0 = subducting_plate_velocities[relevant_ridge][i_coordinate];
