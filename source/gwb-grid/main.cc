@@ -581,7 +581,7 @@ int main(int argc, char **argv)
 
       if (grid_type == "spherical" ||
           grid_type == "chunk" ||
-          grid_type == "anullus")
+          grid_type == "annulus")
         {
           x_min *= (Consts::PI/180);
           x_max *= (Consts::PI/180);
@@ -853,6 +853,7 @@ int main(int argc, char **argv)
                   grid_x[counter] = std::cos(theta) * (inner_radius + zi);
                   grid_z[counter] = std::sin(theta) * (inner_radius + zi);
                   grid_depth[counter] = outer_radius - std::sqrt(grid_x[counter] * grid_x[counter] + grid_z[counter] * grid_z [counter]);
+                  grid_depth[counter] = (std::fabs(grid_depth[counter]) < 1e-8 ? 0 : grid_depth[counter]);
                   counter++;
                 }
             }
@@ -1339,9 +1340,9 @@ int main(int argc, char **argv)
             {
               if (!double_points[i])
                 {
-                  shell_grid_x[counter] = temp_x[i];
-                  shell_grid_y[counter] = temp_y[i];
-                  shell_grid_z[counter] = temp_z[i];
+                  shell_grid_x[counter] = fabs(temp_x[i]) < 1e-8 ? 0. : temp_x[i];
+                  shell_grid_y[counter] = fabs(temp_y[i]) < 1e-8 ? 0. : temp_y[i];
+                  shell_grid_z[counter] = fabs(temp_z[i]) < 1e-8 ? 0. : temp_z[i];
 
                   counter++;
                 }
@@ -1440,6 +1441,7 @@ int main(int argc, char **argv)
                   grid_y[j] = temp_shell_grid_y[counter];
                   grid_z[j] = temp_shell_grid_z[counter];
                   grid_depth[j] = outer_radius - std::sqrt(grid_x[j] * grid_x[j] + grid_y[j] * grid_y[j] + grid_z[j] * grid_z[j]);
+                  grid_depth[j] = (std::fabs(grid_depth[j]) < 1e-8 ? 0 : grid_depth[j]);
 
                   counter++;
                 }

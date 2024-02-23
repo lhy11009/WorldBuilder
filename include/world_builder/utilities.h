@@ -70,16 +70,19 @@ namespace WorldBuilder
     polygon_contains_point_implementation(const std::vector<Point<2> > &point_list,
                                           const Point<2> &point);
 
+
     /**
-     * Given a 2d point, a semi-major axis, and an eccentricity, computes if
-     * the point falls within the ellipse.
+     * Given a 2d point, a semi-major axis, and an eccentricity, computes where
+     * the point falls within the ellipse. If the fraction is larger than 1, the
+     * point is outside the ellipse.
      */
-    bool
-    ellipse_contains_point(const Point<2> &ellipse_center,
-                           const double semi_major_axis,
-                           const double eccentricity,
-                           const double rotation_angle,
-                           const Point<2> &point);
+    double
+    fraction_from_ellipse_center (const Point<2> &ellipse_center,
+                                  const double semi_major_axis,
+                                  const double eccentricity,
+                                  const double rotation_angle,
+                                  const Point<2> &point);
+
 
     /**
      * Given a 2d point and a list of points which form a polygon, compute the smallest
@@ -464,6 +467,17 @@ namespace WorldBuilder
                                            const Objects::NaturalCoordinate &position_in_natural_coordinates_at_min_depth,
     std::vector<std::vector<double>> subducting_plate_velocities = {{0.0}},
     std::vector<double> ridge_migration_times = {0.0});
+
+    // todo_effective
+    /**
+     * Calculate the effective plate ages of a point on the slab surface, and also calculates
+     * the effective trench ages at the start of subduction.
+     * @param ridge_parameters The distance and spreading velocity relative to a mid ocean ridge
+     * @param distance_along_plane The distance along the slab surface plane
+     * @return The effective plate age and the trench age
+    */
+    std::vector<double>
+    calculate_effective_trench_and_plate_ages(std::vector<double> ridge_parameters, double distance_along_plane);
 
   } // namespace Utilities
 } // namespace WorldBuilder
