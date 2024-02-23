@@ -1272,15 +1272,19 @@ namespace WorldBuilder
     template std::array<double,3> convert_point_to_array<3>(const Point<3> &point_);
 
 
-    std::pair<double, double>
+    std::vector<double>
     calculate_ridge_distance_and_spreading(std::vector<std::vector<Point<2>>> mid_oceanic_ridges,
                                            std::vector<std::vector<double>> mid_oceanic_spreading_velocities,
                                            const std::unique_ptr<WorldBuilder::CoordinateSystems::Interface> &coordinate_system,
-                                           const Objects::NaturalCoordinate &position_in_natural_coordinates_at_min_depth)
+                                           const Objects::NaturalCoordinate &position_in_natural_coordinates_at_min_depth,
+                                           std::vector<std::vector<double>> subducting_plate_velocities,
+                                           std::vector<double> ridge_migration_times)
     {
 
       double distance_ridge = std::numeric_limits<double>::max();
       double spreading_velocity_at_ridge = 0;
+      double subducting_velocity_at_trench = 0;
+      double ridge_migration_time = 0;
 
       // first find if the coordinate is on this side of a ridge
       unsigned int relevant_ridge = 0;
@@ -1289,12 +1293,10 @@ namespace WorldBuilder
 
       Point<2> other_check_point = check_point;
       if (check_point.get_coordinate_system() == CoordinateSystem::spherical)
-        {
-          other_check_point[0] += check_point[0] < 0 ? 2.0 * WorldBuilder::Consts::PI : -2.0 * WorldBuilder::Consts::PI;
-        }
+        other_check_point[0] += check_point[0] < 0 ? 2.0 * WorldBuilder::Consts::PI : -2.0 * WorldBuilder::Consts::PI;
 
       // if there is only one ridge, there is no transform
-      if (mid_oceanic_ridges.size() > 1)
+      if (mid_oceanic_ridges[0].size() > 1)
         {
           // There are more than one ridge, so there are transform faults
           // Find the first which is on the same side
@@ -1303,7 +1305,6 @@ namespace WorldBuilder
               const Point<2> transform_point_0 = mid_oceanic_ridges[relevant_ridge+1][0];
               const Point<2> transform_point_1 = mid_oceanic_ridges[relevant_ridge][mid_oceanic_ridges[relevant_ridge].size()-1];
               const Point<2> reference_point   = mid_oceanic_ridges[relevant_ridge][0];
-
               const bool reference_on_side_of_line = (transform_point_1[0] - transform_point_0[0])
                                                      * (reference_point[1] - transform_point_0[1])
                                                      - (transform_point_1[1] - transform_point_0[1])
@@ -1332,6 +1333,17 @@ namespace WorldBuilder
           const double spreading_velocity_point0 = mid_oceanic_spreading_velocities[relevant_ridge][i_coordinate];
           const double spreading_velocity_point1 = mid_oceanic_spreading_velocities[relevant_ridge][i_coordinate + 1];
 
+          double subducting_velocity_point0 = subducting_plate_velocities[0][0];
+          double subducting_velocity_point1 = subducting_plate_velocities[0][0];
+
+          ridge_migration_time = ridge_migration_times[relevant_ridge];
+
+          if (subducting_plate_velocities != std::vector<std::vector<double>> {{0}})
+          {
+            subducting_velocity_point0 = subducting_plate_velocities[relevant_ridge][i_coordinate];
+            subducting_velocity_point1 = subducting_plate_velocities[relevant_ridge][i_coordinate + 1];
+          }
+
           {
             // based on http://geomalgorithms.com/a02-_lines.html
             const Point<2> v = segment_point1 - segment_point0;
@@ -1351,16 +1363,19 @@ namespace WorldBuilder
               {
                 Pb1=segment_point0;
                 spreading_velocity_at_ridge = spreading_velocity_point0;
+                subducting_velocity_at_trench = subducting_velocity_point0;
               }
             else if (c <= c1)
               {
                 Pb1=segment_point1;
                 spreading_velocity_at_ridge = spreading_velocity_point1;
+                subducting_velocity_at_trench = subducting_velocity_point1;
               }
             else
               {
                 Pb1=segment_point0 + (c1 / c) * v;
                 spreading_velocity_at_ridge = spreading_velocity_point0 + (spreading_velocity_point1 - spreading_velocity_point0) * (c1 / c);
+                subducting_velocity_at_trench = subducting_velocity_point0 + (subducting_velocity_point1 - subducting_velocity_point0) * (c1 / c);
               }
 
             Point<2> Pb2(coordinate_system->natural_coordinate_system());
@@ -1368,16 +1383,19 @@ namespace WorldBuilder
               {
                 Pb2=segment_point0;
                 spreading_velocity_at_ridge = spreading_velocity_point0;
+                subducting_velocity_at_trench = subducting_velocity_point0;
               }
             else if (c <= c2)
               {
                 Pb2=segment_point1;
                 spreading_velocity_at_ridge = spreading_velocity_point1;
+                subducting_velocity_at_trench = spreading_velocity_point1;
               }
             else
               {
                 Pb2=segment_point0 + (c1 / c) * v;
                 spreading_velocity_at_ridge = spreading_velocity_point0 + (spreading_velocity_point1 - spreading_velocity_point0) * (c1 / c);
+                subducting_velocity_at_trench = subducting_velocity_point0 + (subducting_velocity_point1 - subducting_velocity_point0) * (c1 / c);
               }
 
             Point<3> compare_point1(coordinate_system->natural_coordinate_system());
@@ -1402,11 +1420,57 @@ namespace WorldBuilder
                                           compare_point2));
           }
         }
-      std::pair<double, double> result;
-      result.first = spreading_velocity_at_ridge / 31557600; // m/s;
-      result.second = distance_ridge;
+      std::vector<double> result;
+      result.push_back(spreading_velocity_at_ridge / 31557600); // m/s
+      result.push_back(distance_ridge);
+      result.push_back(subducting_velocity_at_trench / 31557600); // m/s
+      result.push_back(ridge_migration_time);
       return result;
     }
+
+    // todo_effective
+    std::vector<double>
+    calculate_effective_trench_and_plate_ages(std::vector<double> ridge_parameters, double distance_along_plane)
+    {
+      WBAssert(ridge_parameters.size() == 4, "Internal error: ridge_parameters have the wrong size: " << ridge_parameters.size() << " instead of 4.");
+      const double seconds_in_year = 60.0 * 60.0 * 24.0 * 365.25;  // sec/y
+      const double spreading_velocity = ridge_parameters[0] * seconds_in_year; // m/yr
+      double subducting_velocity = ridge_parameters[2] * seconds_in_year; // m/yr
+      const double ridge_velocity = spreading_velocity - subducting_velocity; // m/yr
+      const int sign_v = (ridge_velocity > 0) ? 1 : ((ridge_velocity < 0) ? -1 : 0);
+
+      const double time_of_ridge_migration = ridge_parameters[3]; //yr
+      const double ridge_drift_distance = abs(ridge_velocity) * time_of_ridge_migration; // m
+
+      double effective_age_shift = 0;
+      double trench_age_shift = 0;
+      if (subducting_velocity <= 0)
+        subducting_velocity = spreading_velocity;
+
+      else
+        {
+          if (distance_along_plane < ridge_drift_distance)
+            {
+              effective_age_shift = (1 - (distance_along_plane / ridge_drift_distance)) * sign_v * \
+                                    distance_along_plane / subducting_velocity; // yr
+              trench_age_shift = (1 - (distance_along_plane / ridge_drift_distance)) * sign_v * \
+                                 distance_along_plane / spreading_velocity; // yr
+            }
+        }
+
+      const double age_at_trench = ridge_parameters[1] / spreading_velocity + trench_age_shift * 0; // m/(m/y) = yr
+      const double plate_age_sec = age_at_trench * seconds_in_year; // y --> seconds
+
+      // Plate age increases with distance along the slab in the mantle
+      double effective_plate_age = plate_age_sec + (distance_along_plane / subducting_velocity + effective_age_shift) * seconds_in_year; // m/(m/y) = y(seconds_in_year)
+
+      std::vector<double> result;
+      result.push_back(age_at_trench);
+      result.push_back(effective_plate_age);
+      return result;
+
+    }
+
   } // namespace Utilities
 } // namespace WorldBuilder
 

@@ -460,11 +460,24 @@ namespace WorldBuilder
      * @param position_in_natural_coordinates_at_min_depth the current position in natural_coordinates
      * @return The content of the file.
     */
-    std::pair<double, double>
+    std::vector<double>
     calculate_ridge_distance_and_spreading(std::vector<std::vector<Point<2>>> mid_oceanic_ridges,
                                            std::vector<std::vector<double>> mid_oceanic_spreading_velocities,
                                            const std::unique_ptr<WorldBuilder::CoordinateSystems::Interface> &coordinate_system,
-                                           const Objects::NaturalCoordinate &position_in_natural_coordinates_at_min_depth);
+                                           const Objects::NaturalCoordinate &position_in_natural_coordinates_at_min_depth,
+    std::vector<std::vector<double>> subducting_plate_velocities = {{0.0}},
+    std::vector<double> ridge_migration_times = {0.0});
+
+    // todo_effective
+    /**
+     * Calculate the effective plate ages of a point on the slab surface, and also calculates
+     * the effective trench ages at the start of subduction.
+     * @param ridge_parameters The distance and spreading velocity relative to a mid ocean ridge
+     * @param distance_along_plane The distance along the slab surface plane
+     * @return The effective plate age and the trench age
+    */
+    std::vector<double>
+    calculate_effective_trench_and_plate_ages(std::vector<double> ridge_parameters, double distance_along_plane);
 
   } // namespace Utilities
 } // namespace WorldBuilder
