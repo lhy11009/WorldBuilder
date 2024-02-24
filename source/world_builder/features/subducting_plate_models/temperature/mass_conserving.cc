@@ -276,9 +276,9 @@ namespace WorldBuilder
                                                      subducting_velocities,
                                                      ridge_spreading_velocities.first);
 
-              const double km2m = 1.0e3; // 1000 m/km
-              const double cm2m = 100; // 100 cm/m
-              const double my = 1.0e6;  // 1e6 y/my
+              constexpr double km2m = 1.0e3; // 1000 m/km
+              constexpr double cm2m = 100; // 100 cm/m
+              constexpr double my = 1.0e6;  // 1e6 y/my
 
               /* information about nearest point on the slab segment */
               const double distance_along_plane = distance_from_planes.distance_along_plane;

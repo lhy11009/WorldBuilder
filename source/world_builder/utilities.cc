@@ -1473,7 +1473,8 @@ namespace WorldBuilder
 
       // Plate age increases with distance along the slab in the mantle
       double effective_plate_age = plate_age_sec + (distance_along_plane / subducting_velocity + effective_age_shift) * seconds_in_year; // m/(m/y) = y(seconds_in_year)
-
+      WBAssertThrow(effective_plate_age >= 0, "The age of the subducting plate is less than or equal to 0. "
+                    "Effective plate age: " << effective_plate_age);
       std::vector<double> result;
       result.push_back(age_at_trench);
       result.push_back(effective_plate_age);
