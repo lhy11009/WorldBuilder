@@ -82,6 +82,7 @@ namespace WorldBuilder
              */
             virtual
             std::array<double,3> get_velocity(const Point<3> &position,
+                                              const Objects::NaturalCoordinate &position_in_natural_coordinates,
                                               const double depth,
                                               const double gravity,
                                               std::array<double,3> velocity,

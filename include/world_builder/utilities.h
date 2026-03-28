@@ -123,6 +123,44 @@ namespace WorldBuilder
     spherical_to_cartesian_coordinates(const std::array<double,3> &scoord);
 
     /**
+     * Return the Cartesian components of the local spherical vector
+     * @p local_spherical_vector at the spherical position @p spherical_position.
+     * The spherical position is defined by radius, longitude and latitude,
+     * and the local spherical vector components are in the radial, local north and
+     * local east directions.
+     * This operation is effectively multiplying the matrix M =
+     *  {
+          {{ cos_lat * cos_lon, -sin_lat * cos_lon, -sin_lon }},
+          {{ cos_lat * sin_lon, -sin_lat * sin_lon,  cos_lon }},
+          {{ sin_lat,            cos_lat,             0.0     }}
+        }
+        to the @p local_spherical_vector.
+     */
+    std::array<double, 3>
+    local_spherical_vector_to_cartesian(
+      const std::array<double, 3> &spherical_position,
+      const std::array<double, 3> &local_spherical_vector);
+
+    /**
+    * Return the local spherical components of the Cartesian vector
+    * @p cartesian_vector at the spherical position @p spherical_position.
+    * The spherical position is defined by radius, longitude and latitude,
+    * and the returned vector components are in the radial, local north and
+    * local east directions.
+    * This operation is effectively multiplying the matrix M =
+    *   {
+          {{  cos_lat * cos_lon,  cos_lat * sin_lon, sin_lat }},
+          {{ -sin_lat * cos_lon, -sin_lat * sin_lon, cos_lat }},
+          {{ -sin_lon,            cos_lon,           0.0     }}
+        }
+        to the @p cartesian_vector.
+    */
+    std::array<double, 3>
+    cartesian_vector_to_local_spherical(
+      const std::array<double, 3> &spherical_position,
+      const std::array<double, 3> &cartesian_vector);
+
+    /**
      * Returns ellipsoidal coordinates of a Cartesian point. The returned array
      * is filled with phi, theta and radius.
      *
@@ -308,6 +346,8 @@ namespace WorldBuilder
         fraction_of_segment(NaN::DSNAN),
         section(NaN::ISNAN),
         segment(NaN::ISNAN),
+        angle_x_axis(NaN::DSNAN),
+        angle(NaN::DSNAN),
         average_angle(NaN::DSNAN),
         depth_reference_surface(NaN::DSNAN),
         closest_trench_point(Point<3>(coordinate_system))
@@ -345,6 +385,17 @@ namespace WorldBuilder
        * The number of the segment that is closest to the point.
        */
       size_t segment;
+
+      /**
+       * The azimuth angle of the x axis where a segment is projected to the top surface
+       */
+      double angle_x_axis;
+
+      /**
+       * The dip angle of the plane at the location where the
+       * point is projected onto the plane.
+       */
+      double angle;
 
       /**
        * The average dip angle of the plane at the location where the

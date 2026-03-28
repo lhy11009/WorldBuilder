@@ -17,8 +17,8 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef WORLD_BUILDER_FEATURES_SUBDUCTING_PLATE_MODELS_VELOCITY_UNIFORM_RAW_H
-#define WORLD_BUILDER_FEATURES_SUBDUCTING_PLATE_MODELS_VELOCITY_UNIFORM_RAW_H
+#ifndef WORLD_BUILDER_FEATURES_SUBDUCTING_PLATE_MODELS_VELOCITY_ALONG_SURFACE_H
+#define WORLD_BUILDER_FEATURES_SUBDUCTING_PLATE_MODELS_VELOCITY_ALONG_SURFACE_H
 
 
 #include "world_builder/features/subducting_plate_models/velocity/interface.h"
@@ -40,18 +40,18 @@ namespace WorldBuilder
          * the returned velocity or composition of the velocity and composition
          * functions of this class will be.
          */
-        class UniformRaw final: public Interface
+        class AlongSurface final: public Interface
         {
           public:
             /**
              * constructor
              */
-            UniformRaw(WorldBuilder::World *world);
+            AlongSurface(WorldBuilder::World *world);
 
             /**
              * Destructor
              */
-            ~UniformRaw() override final;
+            ~AlongSurface() override final;
 
             /**
              * declare and read in the world builder file into the parameters class
@@ -81,10 +81,9 @@ namespace WorldBuilder
 
 
           private:
-            // uniform raw velocity submodule parameters
             double min_depth;
             double max_depth;
-            std::array<double,3> velocity;
+            double velocity_magnitude;
             Operations operation;
 
         };

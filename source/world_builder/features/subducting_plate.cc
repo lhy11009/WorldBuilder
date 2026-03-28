@@ -801,7 +801,9 @@ namespace WorldBuilder
 
                             for (const auto &velocity_model: segment_vector[current_section][current_segment].velocity_systems)
                               {
+                                WBAssert(std::isfinite(distance_from_planes.angle), "distance_from_planes is not a finite number: " << distance_from_planes.angle << ".");
                                 velocity_current_section = velocity_model->get_velocity(position_in_cartesian_coordinates,
+                                                                                        position_in_natural_coordinates,
                                                                                         depth,
                                                                                         gravity_norm,
                                                                                         velocity_current_section,
@@ -820,6 +822,7 @@ namespace WorldBuilder
                             for (const auto &velocity_model: segment_vector[next_section][current_segment].velocity_systems)
                               {
                                 velocity_next_section = velocity_model->get_velocity(position_in_cartesian_coordinates,
+                                                                                     position_in_natural_coordinates,
                                                                                      depth,
                                                                                      gravity_norm,
                                                                                      velocity_next_section,
