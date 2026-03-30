@@ -65,6 +65,33 @@
                 }
             }
         },
+        "indicator properties": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 4294967295,
+            "uniqueItems": false,
+            "description": "The properties of the indicator. This stores user-defined indices (required), linked to indicator properties (optional) including name",
+            "items": {
+                "type": "object",
+                "description": "",
+                "additionalProperties": false,
+                "required": [
+                    "index"
+                ],
+                "properties": {
+                    "index": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "The indicator index used in indicator lookups."
+                    },
+                    "name": {
+                        "type": "string",
+                        "default value": "",
+                        "description": "Optional indicator name. Defaults to <index>."
+                    }
+                }
+            }
+        },
         "potential mantle temperature": {
             "default value": 1600.0,
             "type": "number",
@@ -236,7 +263,8 @@
                             "name": "${1:My Oceanic Plate}",
                             "coordinates": [],
                             "temperature models": [],
-                            "composition models": []
+                            "composition models": [],
+                            "indicator models": []
                         }
                     },
                     {
@@ -12519,6 +12547,146 @@
                                                         "type": "integer",
                                                         "description": ""
                                                     }
+                                                },
+                                                "min depth": {
+                                                    "description": "The depth in meters from which the composition of this feature is present.",
+                                                    "oneOf": [
+                                                        {
+                                                            "default value": 0.0,
+                                                            "type": "number",
+                                                            "description": ""
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "minItems": 0,
+                                                            "maxItems": 4294967295,
+                                                            "uniqueItems": false,
+                                                            "description": "",
+                                                            "items": {
+                                                                "type": "array",
+                                                                "additionalProperties": false,
+                                                                "minItems": 1,
+                                                                "maxItems": 2,
+                                                                "description": "",
+                                                                "items": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "number",
+                                                                            "default value": 0.0
+                                                                        },
+                                                                        {
+                                                                            "type": "array",
+                                                                            "minItems": 1,
+                                                                            "maxItems": 4294967295,
+                                                                            "items": {
+                                                                                "type": "array",
+                                                                                "minItems": 1,
+                                                                                "maxItems": 2,
+                                                                                "items": {
+                                                                                    "type": "number"
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        },
+                                                        {
+                                                            "default value": "",
+                                                            "type": "string",
+                                                            "description": ""
+                                                        }
+                                                    ]
+                                                },
+                                                "max depth": {
+                                                    "description": "The depth in meters to which the composition of this feature is present.",
+                                                    "oneOf": [
+                                                        {
+                                                            "default value": 1.7976931348623157e308,
+                                                            "type": "number",
+                                                            "description": ""
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "minItems": 0,
+                                                            "maxItems": 4294967295,
+                                                            "uniqueItems": false,
+                                                            "description": "",
+                                                            "items": {
+                                                                "type": "array",
+                                                                "additionalProperties": false,
+                                                                "minItems": 1,
+                                                                "maxItems": 2,
+                                                                "description": "",
+                                                                "items": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": "number",
+                                                                            "default value": 1.7976931348623157e308
+                                                                        },
+                                                                        {
+                                                                            "type": "array",
+                                                                            "minItems": 1,
+                                                                            "maxItems": 4294967295,
+                                                                            "items": {
+                                                                                "type": "array",
+                                                                                "minItems": 1,
+                                                                                "maxItems": 2,
+                                                                                "items": {
+                                                                                    "type": "number"
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        },
+                                                        {
+                                                            "default value": "",
+                                                            "type": "string",
+                                                            "description": ""
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "indicator models": {
+                                "description": "A list of indicator models.",
+                                "default value": "",
+                                "type": "array",
+                                "items": {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "description": "A depth-dependent indicator model. Sets constant indicator value of 1 to indicate temperature, velocity, and composition corresponding to index 0, 1, 2, respectively, in the indicators list",
+                                            "additionalProperties": false,
+                                            "required": [
+                                                "model",
+                                                "indicators"
+                                            ],
+                                            "properties": {
+                                                "model": {
+                                                    "default value": "",
+                                                    "type": "string",
+                                                    "description": "The name of the indicator model.",
+                                                    "enum": [
+                                                        "uniform"
+                                                    ]
+                                                },
+                                                "operation": {
+                                                    "default value": "replace",
+                                                    "type": "string",
+                                                    "description": "Whether the value should replace any value previously defined at this location (replace) or add the value to the previously define value. Replacing implies that all indicators not explicitly defined are set to zero. To only replace the defined indicators use the replace only defined option.",
+                                                    "enum": [
+                                                        "replace",
+                                                        "add",
+                                                        "subtract",
+                                                        "replace",
+                                                        "replace defined only"
+                                                    ]
                                                 },
                                                 "min depth": {
                                                     "description": "The depth in meters from which the composition of this feature is present.",
