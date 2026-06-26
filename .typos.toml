@@ -41,6 +41,7 @@ extend-exclude = [
     "contrib/gplates/*",
     "*.bib", # bib entries contain many arbitrary abbreviations
     "tests/prmbackslash*", # this test purposefully breaks words on different lines
+    "AUTHORS"
     ] 
 
 
