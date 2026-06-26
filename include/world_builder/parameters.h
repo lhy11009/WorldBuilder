@@ -91,11 +91,11 @@ namespace WorldBuilder
 
       /**
        * Initializes the parameter file
-       * \param filename A string with the path to the world builder file
+       * \param input_stream A string stream with the content of the world builder file
        * \param has_output_dir A bool indicating whether the world builder may write out information.
        * \param output_dir A string with the path to the directory where it can output information if allowed by has_output_dir
        */
-      void initialize(std::string &filename, bool has_output_dir = false, const std::string &output_dir = "");
+      void initialize(std::stringstream &input_stream, bool has_output_dir = false, const std::string &output_dir = "");
 
       /**
        * A generic get function to retrieve setting from the parameter file.

@@ -96,7 +96,7 @@ namespace WorldBuilder
   Parameters::~Parameters()
     = default;
 
-  void Parameters::initialize(std::string &filename, bool has_output_dir, const std::string &output_dir)
+  void Parameters::initialize(std::stringstream &input_stream, bool has_output_dir, const std::string &output_dir)
   {
 
     if (has_output_dir)
@@ -146,13 +146,12 @@ namespace WorldBuilder
     path_level =0;
     // Now read in the world builder file into a stringstream and
     // put it into a the rapidjson document
-    std::stringstream json_input_stream(WorldBuilder::Utilities::read_and_distribute_file_content(filename));
-    rapidjson::IStreamWrapper isw(json_input_stream);
+    rapidjson::IStreamWrapper isw(input_stream);
 
     // relaxing syntax by allowing comments () for now, maybe also allow trailing commas and (kParseTrailingCommasFlag) and nan's, inf etc (kParseNanAndInfFlag)?
     //WBAssertThrow(!parameters.ParseStream<kParseCommentsFlag>(isw).HasParseError(), "Parsing errors world builder file");
 
-    WBAssertThrowExc(!(parameters.ParseStream<kParseCommentsFlag | kParseNanAndInfFlag>(isw).HasParseError()), std::ifstream json_input_stream_error(filename.c_str()); ,
+    WBAssertThrowExc(!(parameters.ParseStream<kParseCommentsFlag | kParseNanAndInfFlag>(isw).HasParseError()), std::stringstream json_input_stream_error(input_stream.str()); ,
                      "Parsing errors world builder file: Error(offset " << static_cast<unsigned>(parameters.GetErrorOffset())
                      << "): " << GetParseError_En(parameters.GetParseError()) << std::endl << std::endl
                      << " Showing 50 chars before and after: "
@@ -171,7 +170,7 @@ namespace WorldBuilder
                                                                              static_cast<unsigned>(parameters.GetErrorOffset())-5,
                                                                              (static_cast<unsigned>(parameters.GetErrorOffset()) + 10 > json_input_stream_error.seekg(0,std::ios::end).tellg()
                                                                               ?
-                                                                              static_cast<unsigned>(json_input_stream.tellg())-static_cast<unsigned>(parameters.GetErrorOffset())
+                                                                              static_cast<unsigned>(input_stream.tellg())-static_cast<unsigned>(parameters.GetErrorOffset())
                                                                               :
                                                                               10)
                                                                             ));
