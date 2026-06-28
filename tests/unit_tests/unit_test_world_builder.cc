@@ -4027,7 +4027,10 @@ TEST_CASE("WorldBuilder Parameters")
   approval_tests.emplace_back("1",std::isinf(world.parameters.coordinate_system->max_model_depth()));
 
   Parameters prm(world);
-  prm.initialize(file);
+  std::ifstream input_file_stream(file);
+  std::stringstream input_stream;
+  input_stream << input_file_stream.rdbuf();
+  prm.initialize(input_stream);
 
   world.parameters.coordinate_system.swap(prm.coordinate_system);
 

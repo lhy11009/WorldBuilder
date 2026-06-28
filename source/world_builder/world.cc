@@ -97,7 +97,8 @@ namespace WorldBuilder
 
     WorldBuilder::World::declare_entries(parameters);
 
-    parameters.initialize(filename, has_output_dir, output_dir);
+    std::stringstream input_stream(WorldBuilder::Utilities::read_and_distribute_file_content(filename));
+    parameters.initialize(input_stream, has_output_dir, output_dir);
 
     this->parse_entries(parameters);
 
