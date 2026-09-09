@@ -45,6 +45,7 @@
 #include "world_builder/features/plume_models/velocity/interface.h"
 #include "world_builder/features/plume_models/density/interface.h"
 #include "world_builder/features/subducting_plate.h"
+#include "world_builder/features/subducting_plate_models/indicator/interface.h"
 #include "world_builder/features/subducting_plate_models/velocity/interface.h"
 #include "world_builder/gravity_model/interface.h"
 #include "world_builder/types/composition_property.h"
@@ -1367,16 +1368,18 @@ namespace WorldBuilder
       Features::SubductingPlateModels::Composition::Interface,
       Features::SubductingPlateModels::Grains::Interface,
       Features::SubductingPlateModels::Velocity::Interface,
-      Features::SubductingPlateModels::Density::Interface> >
+      Features::SubductingPlateModels::Density::Interface,
+      Features::SubductingPlateModels::Indicator::Interface> >
       Parameters::get_vector(const std::string &name,
                              std::vector<std::shared_ptr<Features::SubductingPlateModels::Temperature::Interface> > &default_temperature_models,
                              std::vector<std::shared_ptr<Features::SubductingPlateModels::Composition::Interface> > &default_composition_models,
                              std::vector<std::shared_ptr<Features::SubductingPlateModels::Grains::Interface> > &default_grains_models,
                              std::vector<std::shared_ptr<Features::SubductingPlateModels::Velocity::Interface> > &default_velocity_models,
-                             std::vector<std::shared_ptr<Features::SubductingPlateModels::Density::Interface> > &default_density_models)
+                             std::vector<std::shared_ptr<Features::SubductingPlateModels::Density::Interface> > &default_density_models,
+                             std::vector<std::shared_ptr<Features::SubductingPlateModels::Indicator::Interface> > &default_indicator_models)
   {
     using namespace Features::SubductingPlateModels;
-    std::vector<Objects::Segment<Temperature::Interface,Composition::Interface,Grains::Interface,Velocity::Interface,Density::Interface> > vector;
+    std::vector<Objects::Segment<Temperature::Interface,Composition::Interface,Grains::Interface,Velocity::Interface,Density::Interface,Indicator::Interface> > vector;
     this->enter_subsection(name);
     const std::string strict_base = this->get_full_json_path();
     WBAssertThrow(Pointer((strict_base).c_str()).Get(parameters) != nullptr,"Error: " << name
@@ -1632,7 +1635,29 @@ namespace WorldBuilder
                 Pointer((base + "/velocity model default entry").c_str()).Set(parameters,true);
               }
           }
-        vector.emplace_back(length, thickness, top_truncation, angle, temperature_models, composition_models, grains_models, velocity_models, density_models);
+        // now do the same for indicators
+        std::vector<std::shared_ptr<Indicator::Interface> > indicator_models;
+        if (!this->get_shared_pointers<Indicator::Interface>("indicator models", indicator_models) ||
+            Pointer((base + "/indicator model default entry").c_str()).Get(parameters) != nullptr)
+          {
+            indicator_models = default_indicator_models;
+
+            for (searchback = 0; searchback < path.size(); ++searchback)
+              if (Pointer((this->get_full_json_path(path.size()-searchback) + "/indicator models").c_str()).Get(parameters) != nullptr)
+                break;
+
+            if (searchback < path.size())
+              {
+                Value value1 = Value(Pointer((this->get_full_json_path(path.size()-searchback) + "/indicator models").c_str()).Get(parameters)->GetArray());
+                Value value2;
+                value2.CopyFrom(value1, parameters.GetAllocator());
+                Pointer((this->get_full_json_path(path.size()-searchback) + "/indicator models").c_str()).Set(parameters, value1);
+                Pointer((base).c_str()).Get(parameters)->AddMember("indicator models", value2, parameters.GetAllocator());
+                Pointer((base + "/indicator model default entry").c_str()).Set(parameters,true);
+              }
+          }
+
+        vector.emplace_back(length, thickness, top_truncation, angle, temperature_models, composition_models, grains_models, velocity_models, density_models, indicator_models);
 
         this->leave_subsection();
       }
@@ -2798,6 +2823,10 @@ namespace WorldBuilder
   Parameters::get_shared_pointers<Features::SubductingPlateModels::Density::Interface>(const std::string &name,
       std::vector<std::shared_ptr<Features::SubductingPlateModels::Density::Interface> > &vector);
 
+  template bool
+  Parameters::get_shared_pointers<Features::SubductingPlateModels::Indicator::Interface>(const std::string &name,
+      std::vector<std::shared_ptr<Features::SubductingPlateModels::Indicator::Interface> > &vector);
+
 
   /**
    * Todo: Returns a vector of pointers to the Point<3> Type based on the provided name.
@@ -2842,4 +2871,3 @@ namespace WorldBuilder
 
 
 } // namespace WorldBuilder
-
