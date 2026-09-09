@@ -24,6 +24,8 @@
 #include "world_builder/types/double.h"
 #include "world_builder/types/object.h"
 #include "world_builder/types/one_of.h"
+#include "world_builder/types/string.h"
+#include "world_builder/types/unsigned_int.h"
 #include "world_builder/types/value_at_points.h"
 #include "world_builder/world.h"
 
@@ -55,11 +57,9 @@ namespace WorldBuilder
         Uniform::declare_entries(Parameters &prm, const std::string & /*unused*/)
         {
           // Document plugin and require entries if needed.
-          // Add indicators to the required parameters.
-          prm.declare_entry("", Types::Object({"indicators"}),
-                            "A depth-dependent indicator model. Sets constant indicator value of 1 to "
-                            "indicate temperature, velocity, and composition corresponding to index "
-                            "0, 1, 2, respectively, in the indicators list");
+          prm.declare_entry("", Types::Object(),
+                            "A depth-dependent indicator model. Sets a constant indicator value of 1 "
+                            "for the selected user-defined indicators.");
 
           // Declare entries of this plugin
           prm.declare_entry("min depth", Types::OneOf(Types::Double(0),
@@ -71,6 +71,10 @@ namespace WorldBuilder
                                                       Types::Array(Types::ValueAtPoints(std::numeric_limits<double>::max(),2)),
                                                       Types::String("")),
                             "The depth in meters to which the composition of this feature is present.");
+
+          prm.declare_entry("indicators", Types::Array(Types::OneOf(Types::UnsignedInt(0),Types::String("")),0),
+                            "A list of user-defined indicator indices or names. If omitted, indicator 0 is selected. "
+                            "An explicitly empty list selects no indicators.");
 
           prm.declare_entry("operation", Types::String("replace", std::vector<std::string> {"replace", "replace defined only"}),
                             "Whether the value should replace any value previously defined at this location (replace) or "
@@ -86,7 +90,16 @@ namespace WorldBuilder
           max_depth_surface = Objects::Surface(prm.get("max depth",coordinates));
           max_depth = max_depth_surface.maximum;
           WBAssert(max_depth >= min_depth, "max depth needs to be larger or equal to min depth.");
-          indicators = prm.get_vector<unsigned int>("indicators", world->indicator_properties);
+          if (prm.check_entry("indicators"))
+            indicators = prm.get_vector<unsigned int>("indicators", world->indicator_properties);
+          else
+            {
+              constexpr unsigned int default_indicator = 0;
+              WBAssertThrow(world->indicator_properties.find(default_indicator) != world->indicator_properties.end(),
+                            "Invalid default indicator index " << default_indicator
+                            << ": no matching entry exists in indicator properties.");
+              indicators = {default_indicator};
+            }
           operation = string_operations_to_enum(prm.get<std::string>("operation"));
         }
 
@@ -135,4 +148,3 @@ namespace WorldBuilder
     } // namespace OceanicPlateModels
   } // namespace Features
 } // namespace WorldBuilder
-

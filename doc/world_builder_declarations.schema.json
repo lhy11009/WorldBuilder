@@ -12661,11 +12661,10 @@
                                     "oneOf": [
                                         {
                                             "type": "object",
-                                            "description": "A depth-dependent indicator model. Sets constant indicator value of 1 to indicate temperature, velocity, and composition corresponding to index 0, 1, 2, respectively, in the indicators list",
+                                            "description": "A depth-dependent indicator model. Sets a constant indicator value of 1 for the selected user-defined indicators.",
                                             "additionalProperties": false,
                                             "required": [
-                                                "model",
-                                                "indicators"
+                                                "model"
                                             ],
                                             "properties": {
                                                 "model": {
@@ -12674,18 +12673,6 @@
                                                     "description": "The name of the indicator model.",
                                                     "enum": [
                                                         "uniform"
-                                                    ]
-                                                },
-                                                "operation": {
-                                                    "default value": "replace",
-                                                    "type": "string",
-                                                    "description": "Whether the value should replace any value previously defined at this location (replace) or add the value to the previously define value. Replacing implies that all indicators not explicitly defined are set to zero. To only replace the defined indicators use the replace only defined option.",
-                                                    "enum": [
-                                                        "replace",
-                                                        "add",
-                                                        "subtract",
-                                                        "replace",
-                                                        "replace defined only"
                                                     ]
                                                 },
                                                 "min depth": {
@@ -12786,6 +12773,37 @@
                                                             "type": "string",
                                                             "description": ""
                                                         }
+                                                    ]
+                                                },
+                                                "indicators": {
+                                                    "type": "array",
+                                                    "minItems": 0,
+                                                    "maxItems": 4294967295,
+                                                    "uniqueItems": false,
+                                                    "description": "A list of user-defined indicator indices or names. If omitted, indicator 0 is selected. An explicitly empty list selects no indicators.",
+                                                    "items": {
+                                                        "description": "",
+                                                        "oneOf": [
+                                                            {
+                                                                "default value": 0,
+                                                                "type": "integer",
+                                                                "description": ""
+                                                            },
+                                                            {
+                                                                "default value": "",
+                                                                "type": "string",
+                                                                "description": ""
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "operation": {
+                                                    "default value": "replace",
+                                                    "type": "string",
+                                                    "description": "Whether the value should replace any value previously defined at this location (replace) or add the value to the previously define value. Replacing implies that all indicators not explicitly defined are set to zero. To only replace the defined indicators use the replace only defined option.",
+                                                    "enum": [
+                                                        "replace",
+                                                        "replace defined only"
                                                     ]
                                                 }
                                             }

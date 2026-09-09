@@ -21121,9 +21121,9 @@
 :name: open_features_items_oneOf_4_indicator-models_items_oneOf_1
 
 - **type**:object
-- **description**:A depth-dependent indicator model. Sets constant indicator value of 1 to indicate temperature, velocity, and composition corresponding to index 0, 1, 2, respectively, in the indicators list
+- **description**:A depth-dependent indicator model. Sets a constant indicator value of 1 for the selected user-defined indicators.
 - **additionalProperties**:false
-- **required**:[model, indicators]
+- **required**:[model]
 
 ::::::::::::::::{dropdown} /features/items/oneOf/4/indicator models/items/oneOf/1/model
 :open:
@@ -21133,16 +21133,6 @@
 - **type**:string
 - **description**:The name of the indicator model.
 - **enum**:[uniform]
-::::::::::::::::
-
-::::::::::::::::{dropdown} /features/items/oneOf/4/indicator models/items/oneOf/1/operation
-:open:
-:name: open_features_items_oneOf_4_indicator-models_items_oneOf_1_operation
-
-- **default value**:replace
-- **type**:string
-- **description**:Whether the value should replace any value previously defined at this location (replace) or add the value to the previously define value. Replacing implies that all indicators not explicitly defined are set to zero. To only replace the defined indicators use the replace only defined option.
-- **enum**:[replace, add, subtract, replace, replace defined only]
 ::::::::::::::::
 
 ::::::::::::::::{dropdown} /features/items/oneOf/4/indicator models/items/oneOf/1/min depth
@@ -21335,6 +21325,57 @@
 ::::::::::::::
 
 
+::::::::::::::::
+
+::::::::::::::::{dropdown} /features/items/oneOf/4/indicator models/items/oneOf/1/indicators
+:open:
+:name: open_features_items_oneOf_4_indicator-models_items_oneOf_1_indicators
+
+- **type**:array
+- **minItems**:0
+- **maxItems**:4294967295
+- **uniqueItems**:false
+- **description**:A list of user-defined indicator indices or names. If omitted, indicator 0 is selected. An explicitly empty list selects no indicators.
+:::::::::::::::{dropdown} /features/items/oneOf/4/indicator models/items/oneOf/1/indicators/items
+:open:
+:name: open_features_items_oneOf_4_indicator-models_items_oneOf_1_indicators_items
+
+- **description**:
+::::::::::::::{dropdown} /features/items/oneOf/4/indicator models/items/oneOf/1/indicators/items/oneOf
+:open:
+:name: open_features_items_oneOf_4_indicator-models_items_oneOf_1_indicators_items_oneOf
+
+:::::::::::::{dropdown} /features/items/oneOf/4/indicator models/items/oneOf/1/indicators/items/oneOf/1
+:open:
+:name: open_features_items_oneOf_4_indicator-models_items_oneOf_1_indicators_items_oneOf_1
+
+- **default value**:0
+- **type**:integer
+- **description**:
+:::::::::::::
+
+:::::::::::::{dropdown} /features/items/oneOf/4/indicator models/items/oneOf/1/indicators/items/oneOf/2
+:open:
+:name: open_features_items_oneOf_4_indicator-models_items_oneOf_1_indicators_items_oneOf_2
+
+- **default value**:
+- **type**:string
+- **description**:
+:::::::::::::
+
+
+:::::::::::::::
+
+::::::::::::::::
+
+::::::::::::::::{dropdown} /features/items/oneOf/4/indicator models/items/oneOf/1/operation
+:open:
+:name: open_features_items_oneOf_4_indicator-models_items_oneOf_1_operation
+
+- **default value**:replace
+- **type**:string
+- **description**:Whether the value should replace any value previously defined at this location (replace) or add the value to the previously define value. Replacing implies that all indicators not explicitly defined are set to zero. To only replace the defined indicators use the replace only defined option.
+- **enum**:[replace, replace defined only]
 ::::::::::::::::
 
 
