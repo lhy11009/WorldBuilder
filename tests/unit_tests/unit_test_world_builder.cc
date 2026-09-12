@@ -2714,6 +2714,11 @@ TEST_CASE("WorldBuilder Features: Subducting Plate")
 
 TEST_CASE("WorldBuilder Features: Subducting Plate along-surface velocity in spherical coordinates")
 {
+  // This is an end-to-end check of the public World::properties() interface. It
+  // compares the returned velocity with the Cartesian components obtained for
+  // this point from the curved-slab geometry and along-surface velocity model.
+  // The result shows that the complete query path preserves both in-plane
+  // Cartesian components and removes the out-of-plane component in 2-D.
   const std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR
                                 + "/tests/gwb-grid/2d_spherical_subduction_along_surface_velocity.wb";
   const WorldBuilder::World world(file_name);
@@ -2734,6 +2739,11 @@ TEST_CASE("WorldBuilder Features: Subducting Plate along-surface velocity in sph
 
 TEST_CASE("WorldBuilder Features: Along-surface velocity model in spherical coordinates")
 {
+  // This isolates AlongSurface::get_velocity() by supplying an idealized
+  // 45-degree dip and 90-degree azimuth. The result is checked against an
+  // independently constructed spherical-to-Cartesian velocity. Agreement
+  // shows that the velocity model handles a prescribed slab orientation and
+  // converts it to Cartesian components correctly.
   const std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR
                                 + "/tests/gwb-grid/2d_spherical_subduction_along_surface_velocity.wb";
   WorldBuilder::World world(file_name);
@@ -2787,6 +2797,11 @@ TEST_CASE("WorldBuilder Features: Along-surface velocity model in spherical coor
 
 TEST_CASE("WorldBuilder Utilities: Subducting Plate geometry at along-surface velocity query point")
 {
+  // This isolates distance_point_from_curved_planes() at the point used by the
+  // velocity tests. It checks the selected segment and the local dip and
+  // azimuth returned by the curved-slab geometry. The values show that the
+  // local orientation inside this curved trench is not the idealized 45-degree
+  // dip and 90-degree azimuth prescribed at the segment boundary.
   const std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR
                                 + "/tests/gwb-grid/2d_spherical_subduction_along_surface_velocity.wb";
   WorldBuilder::World world(file_name);
@@ -2838,6 +2853,12 @@ TEST_CASE("WorldBuilder Utilities: Subducting Plate geometry at along-surface ve
 
 TEST_CASE("WorldBuilder Features: Along-surface velocity with measured slab orientation")
 {
+  // This passes the local dip and azimuth measured by the geometry test above
+  // directly to AlongSurface::get_velocity() and compares its output with the
+  // analytical spherical-to-Cartesian transformation. Agreement shows that
+  // the velocity model reproduces the end-to-end Cartesian result when given
+  // the geometry utility's actual orientation, separating velocity conversion
+  // from the calculation of the curved slab orientation.
   const std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR
                                 + "/tests/gwb-grid/2d_spherical_subduction_along_surface_velocity.wb";
   WorldBuilder::World world(file_name);
