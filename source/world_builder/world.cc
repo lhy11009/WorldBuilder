@@ -463,13 +463,15 @@ namespace WorldBuilder
             }
             case 5:
             {
-              // convert 3d velocity vector to a 2d one
-              Point<2> vector = Point<2>(cartesian);
-              vector[0] = surface_coord_conversions[0]*results[counter]+surface_coord_conversions[1]*results[counter+1];
-              vector[1] = results[counter+2];
-              results[counter] = surface_coord_conversions[0]*results[counter]+surface_coord_conversions[1]*results[counter+1];
-              results[counter+1] = results[counter+2];
-              results[counter+2] = 0;
+              // Cartesian cross sections return the in-plane components. Spherical
+              // cross sections retain the Cartesian vector returned by the 3d query.
+              if (coordinate_system == cartesian)
+                {
+                  results[counter] = surface_coord_conversions[0]*results[counter]
+                                     + surface_coord_conversions[1]*results[counter+1];
+                  results[counter+1] = results[counter+2];
+                  results[counter+2] = 0;
+                }
               counter += 3;
               break;
             }
@@ -701,4 +703,3 @@ namespace WorldBuilder
   }
 
 } // namespace WorldBuilder
-
