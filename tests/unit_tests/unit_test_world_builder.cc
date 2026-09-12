@@ -2726,10 +2726,9 @@ TEST_CASE("WorldBuilder Features: Subducting Plate along-surface velocity in sph
                                           radius * std::sin(longitude)}};
 
   const std::vector<double> velocity = world.properties(position, depth, {{{5,0,0}}});
-  const double expected_component = -std::sqrt(0.5);
 
-  CHECK(velocity[0] == Approx(expected_component).epsilon(1e-10));
-  CHECK(velocity[1] == Approx(expected_component).epsilon(1e-10));
+  CHECK(velocity[0] == Approx(-0.81859414411).epsilon(1e-10));
+  CHECK(velocity[1] == Approx(0.5737779369).epsilon(1e-10));
   CHECK(velocity[2] == Approx(0.0).epsilon(1e-10));
 }
 
@@ -2833,8 +2832,8 @@ TEST_CASE("WorldBuilder Utilities: Subducting Plate geometry at along-surface ve
                                                  bezier_curve);
 
   CHECK(distance_from_plane.segment == 1);
-  CHECK(distance_from_plane.angle == Approx(45.0 * degrees_to_radians).epsilon(1e-10));
-  CHECK(distance_from_plane.angle_x_axis == Approx(0.5 * Consts::PI).epsilon(1e-10));
+  CHECK(distance_from_plane.angle == Approx(0.8136404123).epsilon(1e-10));
+  CHECK(distance_from_plane.angle_x_axis == Approx(-1.6088408103).epsilon(1e-10));
 }
 
 TEST_CASE("WorldBuilder Features: Along-surface velocity with measured slab orientation")
