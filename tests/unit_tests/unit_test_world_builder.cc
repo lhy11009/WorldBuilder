@@ -2727,8 +2727,11 @@ TEST_CASE("WorldBuilder Features: Subducting Plate along-surface velocity in sph
   const double depth = 306666.6666666667;
   const double radius = 6371e3 - depth;
   const double longitude = (25.0 / 15.0 * 5.0) * Consts::PI / 180.0;
-  const std::array<double,2> position = {{radius * std::cos(longitude),
-                                          radius * std::sin(longitude)}};
+  const std::array<double,2> position = {{
+      radius *std::cos(longitude),
+      radius *std::sin(longitude)
+    }
+  };
 
   const std::vector<double> velocity = world.properties(position, depth, {{{5,0,0}}});
 
@@ -2778,17 +2781,21 @@ TEST_CASE("WorldBuilder Features: Along-surface velocity model in spherical coor
                                                                     natural_coordinate,
                                                                     depth,
                                                                     0.0,
-                                                                    {{0.0,0.0,0.0}},
-                                                                    0.0,
-                                                                    900e3,
-                                                                    distance_from_plane,
-                                                                    {900e3,95e3});
+  {{0.0,0.0,0.0}},
+  0.0,
+  900e3,
+  distance_from_plane,
+  {900e3,95e3});
 
   const double expected_component = std::sqrt(0.5);
   const std::array<double,3> expected_velocity =
-  {{expected_component * (std::sin(longitude) - std::cos(longitude)),
-    -expected_component * (std::sin(longitude) + std::cos(longitude)),
-    0.0}};
+  {
+    {
+      expected_component *(std::sin(longitude) - std::cos(longitude)),
+      -expected_component *(std::sin(longitude) + std::cos(longitude)),
+      0.0
+    }
+  };
 
   CHECK(velocity[0] == Approx(expected_velocity[0]).epsilon(1e-10));
   CHECK(velocity[1] == Approx(expected_velocity[1]).epsilon(1e-10));
@@ -2819,17 +2826,25 @@ TEST_CASE("WorldBuilder Utilities: Subducting Plate geometry at along-surface ve
   const double degrees_to_radians = Consts::PI / 180.0;
   const Point<2> dip_point(80.0 * degrees_to_radians, 0.0, spherical);
   const std::vector<Point<2>> trench_coordinates =
-  {{Point<2>(15.0 * degrees_to_radians, 41.0 * degrees_to_radians, spherical),
-    Point<2>(15.0 * degrees_to_radians, 25.0 * degrees_to_radians, spherical),
-    Point<2>(5.0 * degrees_to_radians, 5.0 * degrees_to_radians, spherical),
-    Point<2>(5.0 * degrees_to_radians, -1.0 * degrees_to_radians, spherical)}};
+  {
+    {
+      Point<2>(15.0 * degrees_to_radians, 41.0 * degrees_to_radians, spherical),
+      Point<2>(15.0 * degrees_to_radians, 25.0 * degrees_to_radians, spherical),
+      Point<2>(5.0 * degrees_to_radians, 5.0 * degrees_to_radians, spherical),
+      Point<2>(5.0 * degrees_to_radians, -1.0 * degrees_to_radians, spherical)
+    }
+  };
 
   const std::vector<double> segment_lengths = {{200e3,400e3,200e3,100e3}};
   const std::vector<Point<2>> segment_angles =
-  {{Point<2>(0.0, 45.0 * degrees_to_radians, cartesian),
-    Point<2>(45.0 * degrees_to_radians, 45.0 * degrees_to_radians, cartesian),
-    Point<2>(45.0 * degrees_to_radians, 0.0, cartesian),
-    Point<2>(0.0, 0.0, cartesian)}};
+  {
+    {
+      Point<2>(0.0, 45.0 * degrees_to_radians, cartesian),
+      Point<2>(45.0 * degrees_to_radians, 45.0 * degrees_to_radians, cartesian),
+      Point<2>(45.0 * degrees_to_radians, 0.0, cartesian),
+      Point<2>(0.0, 0.0, cartesian)
+    }
+  };
   const std::vector<std::vector<double>> slab_segment_lengths(trench_coordinates.size(), segment_lengths);
   const std::vector<std::vector<Point<2>>> slab_segment_angles(trench_coordinates.size(), segment_angles);
   const Objects::BezierCurve bezier_curve(trench_coordinates);
@@ -2895,19 +2910,23 @@ TEST_CASE("WorldBuilder Features: Along-surface velocity with measured slab orie
                                                                     natural_coordinate,
                                                                     depth,
                                                                     0.0,
-                                                                    {{0.0,0.0,0.0}},
-                                                                    0.0,
-                                                                    900e3,
-                                                                    distance_from_plane,
-                                                                    {900e3,95e3});
+  {{0.0,0.0,0.0}},
+  0.0,
+  900e3,
+  distance_from_plane,
+  {900e3,95e3});
 
   const double radial_velocity = -std::sin(measured_dip);
   const double northward_velocity = -std::cos(measured_dip) * std::cos(measured_azimuth);
   const double eastward_velocity = -std::cos(measured_dip) * std::sin(measured_azimuth);
   const std::array<double,3> expected_velocity =
-  {{std::cos(longitude) * radial_velocity - std::sin(longitude) * eastward_velocity,
-    std::sin(longitude) * radial_velocity + std::cos(longitude) * eastward_velocity,
-    northward_velocity}};
+  {
+    {
+      std::cos(longitude) *radial_velocity - std::sin(longitude) *eastward_velocity,
+      std::sin(longitude) *radial_velocity + std::cos(longitude) *eastward_velocity,
+      northward_velocity
+    }
+  };
 
   CHECK(velocity[0] == Approx(expected_velocity[0]).epsilon(1e-10));
   CHECK(velocity[1] == Approx(expected_velocity[1]).epsilon(1e-10));
