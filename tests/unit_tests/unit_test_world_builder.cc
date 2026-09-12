@@ -31,6 +31,7 @@
 #include "world_builder/coordinate_systems/invalid.h"
 #include "world_builder/features/continental_plate.h"
 #include "world_builder/features/interface.h"
+#include "world_builder/features/subducting_plate_models/velocity/along_surface.h"
 #include "world_builder/grains.h"
 #include "world_builder/objects/natural_coordinate.h"
 #include "world_builder/objects/segment.h"
@@ -2709,6 +2710,188 @@ TEST_CASE("WorldBuilder Features: Subducting Plate")
       approvals.emplace_back(s.str());
     }
   ApprovalTests::Approvals::verifyAll("Test", approvals);
+}
+
+TEST_CASE("WorldBuilder Features: Subducting Plate along-surface velocity in spherical coordinates")
+{
+  const std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR
+                                + "/tests/gwb-grid/2d_spherical_subduction_along_surface_velocity.wb";
+  const WorldBuilder::World world(file_name);
+
+  // This point is in the segment with a prescribed dip of 45 degrees.
+  const double depth = 306666.6666666667;
+  const double radius = 6371e3 - depth;
+  const double longitude = (25.0 / 15.0 * 5.0) * Consts::PI / 180.0;
+  const std::array<double,2> position = {{radius * std::cos(longitude),
+                                          radius * std::sin(longitude)}};
+
+  const std::vector<double> velocity = world.properties(position, depth, {{{5,0,0}}});
+  const double expected_component = -std::sqrt(0.5);
+
+  CHECK(velocity[0] == Approx(expected_component).epsilon(1e-10));
+  CHECK(velocity[1] == Approx(expected_component).epsilon(1e-10));
+  CHECK(velocity[2] == Approx(0.0).epsilon(1e-10));
+}
+
+TEST_CASE("WorldBuilder Features: Along-surface velocity model in spherical coordinates")
+{
+  const std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR
+                                + "/tests/gwb-grid/2d_spherical_subduction_along_surface_velocity.wb";
+  WorldBuilder::World world(file_name);
+  Features::SubductingPlateModels::Velocity::AlongSurface velocity_model(&world);
+
+  world.parameters.enter_subsection("features");
+  world.parameters.enter_subsection("0");
+  world.parameters.enter_subsection("velocity models");
+  world.parameters.enter_subsection("0");
+  velocity_model.parse_entries(world.parameters);
+  world.parameters.leave_subsection();
+  world.parameters.leave_subsection();
+  world.parameters.leave_subsection();
+  world.parameters.leave_subsection();
+
+  // Use the same query point as the World::properties() test above.
+  const double depth = 306666.6666666667;
+  const double radius = 6371e3 - depth;
+  const double longitude = (25.0 / 15.0 * 5.0) * Consts::PI / 180.0;
+  const Point<3> position(radius * std::cos(longitude),
+                          radius * std::sin(longitude),
+                          0.0,
+                          cartesian);
+  const Objects::NaturalCoordinate natural_coordinate(position, *(world.parameters.coordinate_system));
+
+  Utilities::PointDistanceFromCurvedPlanes distance_from_plane(spherical);
+  distance_from_plane.distance_from_plane = 0.0;
+  distance_from_plane.angle = 45.0 * Consts::PI / 180.0;
+  distance_from_plane.angle_x_axis = 0.5 * Consts::PI;
+
+  const std::array<double,3> velocity = velocity_model.get_velocity(position,
+                                                                    natural_coordinate,
+                                                                    depth,
+                                                                    0.0,
+                                                                    {{0.0,0.0,0.0}},
+                                                                    0.0,
+                                                                    900e3,
+                                                                    distance_from_plane,
+                                                                    {900e3,95e3});
+
+  const double expected_component = std::sqrt(0.5);
+  const std::array<double,3> expected_velocity =
+  {{expected_component * (std::sin(longitude) - std::cos(longitude)),
+    -expected_component * (std::sin(longitude) + std::cos(longitude)),
+    0.0}};
+
+  CHECK(velocity[0] == Approx(expected_velocity[0]).epsilon(1e-10));
+  CHECK(velocity[1] == Approx(expected_velocity[1]).epsilon(1e-10));
+  CHECK(velocity[2] == Approx(expected_velocity[2]).epsilon(1e-10));
+}
+
+TEST_CASE("WorldBuilder Utilities: Subducting Plate geometry at along-surface velocity query point")
+{
+  const std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR
+                                + "/tests/gwb-grid/2d_spherical_subduction_along_surface_velocity.wb";
+  WorldBuilder::World world(file_name);
+
+  // Use the same query point as the two velocity tests above.
+  const double depth = 306666.6666666667;
+  const double radius = 6371e3 - depth;
+  const double longitude = (25.0 / 15.0 * 5.0) * Consts::PI / 180.0;
+  const Point<3> position(radius * std::cos(longitude),
+                          radius * std::sin(longitude),
+                          0.0,
+                          cartesian);
+  const Objects::NaturalCoordinate natural_coordinate(position, *(world.parameters.coordinate_system));
+
+  const double degrees_to_radians = Consts::PI / 180.0;
+  const Point<2> dip_point(80.0 * degrees_to_radians, 0.0, spherical);
+  const std::vector<Point<2>> trench_coordinates =
+  {{Point<2>(15.0 * degrees_to_radians, 41.0 * degrees_to_radians, spherical),
+    Point<2>(15.0 * degrees_to_radians, 25.0 * degrees_to_radians, spherical),
+    Point<2>(5.0 * degrees_to_radians, 5.0 * degrees_to_radians, spherical),
+    Point<2>(5.0 * degrees_to_radians, -1.0 * degrees_to_radians, spherical)}};
+
+  const std::vector<double> segment_lengths = {{200e3,400e3,200e3,100e3}};
+  const std::vector<Point<2>> segment_angles =
+  {{Point<2>(0.0, 45.0 * degrees_to_radians, cartesian),
+    Point<2>(45.0 * degrees_to_radians, 45.0 * degrees_to_radians, cartesian),
+    Point<2>(45.0 * degrees_to_radians, 0.0, cartesian),
+    Point<2>(0.0, 0.0, cartesian)}};
+  const std::vector<std::vector<double>> slab_segment_lengths(trench_coordinates.size(), segment_lengths);
+  const std::vector<std::vector<Point<2>>> slab_segment_angles(trench_coordinates.size(), segment_angles);
+  const Objects::BezierCurve bezier_curve(trench_coordinates);
+
+  const Utilities::PointDistanceFromCurvedPlanes distance_from_plane =
+    Utilities::distance_point_from_curved_planes(position,
+                                                 natural_coordinate,
+                                                 dip_point,
+                                                 trench_coordinates,
+                                                 slab_segment_lengths,
+                                                 slab_segment_angles,
+                                                 6371e3,
+                                                 world.parameters.coordinate_system,
+                                                 false,
+                                                 bezier_curve);
+
+  CHECK(distance_from_plane.segment == 1);
+  CHECK(distance_from_plane.angle == Approx(45.0 * degrees_to_radians).epsilon(1e-10));
+  CHECK(distance_from_plane.angle_x_axis == Approx(0.5 * Consts::PI).epsilon(1e-10));
+}
+
+TEST_CASE("WorldBuilder Features: Along-surface velocity with measured slab orientation")
+{
+  const std::string file_name = WorldBuilder::Data::WORLD_BUILDER_SOURCE_DIR
+                                + "/tests/gwb-grid/2d_spherical_subduction_along_surface_velocity.wb";
+  WorldBuilder::World world(file_name);
+  Features::SubductingPlateModels::Velocity::AlongSurface velocity_model(&world);
+
+  world.parameters.enter_subsection("features");
+  world.parameters.enter_subsection("0");
+  world.parameters.enter_subsection("velocity models");
+  world.parameters.enter_subsection("0");
+  velocity_model.parse_entries(world.parameters);
+  world.parameters.leave_subsection();
+  world.parameters.leave_subsection();
+  world.parameters.leave_subsection();
+  world.parameters.leave_subsection();
+
+  // Use the same query point and the orientation returned by the geometry test above.
+  const double depth = 306666.6666666667;
+  const double radius = 6371e3 - depth;
+  const double longitude = (25.0 / 15.0 * 5.0) * Consts::PI / 180.0;
+  const Point<3> position(radius * std::cos(longitude),
+                          radius * std::sin(longitude),
+                          0.0,
+                          cartesian);
+  const Objects::NaturalCoordinate natural_coordinate(position, *(world.parameters.coordinate_system));
+
+  const double measured_dip = 0.8136404123;
+  const double measured_azimuth = -1.6088408103;
+  Utilities::PointDistanceFromCurvedPlanes distance_from_plane(spherical);
+  distance_from_plane.distance_from_plane = 0.0;
+  distance_from_plane.angle = measured_dip;
+  distance_from_plane.angle_x_axis = measured_azimuth;
+
+  const std::array<double,3> velocity = velocity_model.get_velocity(position,
+                                                                    natural_coordinate,
+                                                                    depth,
+                                                                    0.0,
+                                                                    {{0.0,0.0,0.0}},
+                                                                    0.0,
+                                                                    900e3,
+                                                                    distance_from_plane,
+                                                                    {900e3,95e3});
+
+  const double radial_velocity = -std::sin(measured_dip);
+  const double northward_velocity = -std::cos(measured_dip) * std::cos(measured_azimuth);
+  const double eastward_velocity = -std::cos(measured_dip) * std::sin(measured_azimuth);
+  const std::array<double,3> expected_velocity =
+  {{std::cos(longitude) * radial_velocity - std::sin(longitude) * eastward_velocity,
+    std::sin(longitude) * radial_velocity + std::cos(longitude) * eastward_velocity,
+    northward_velocity}};
+
+  CHECK(velocity[0] == Approx(expected_velocity[0]).epsilon(1e-10));
+  CHECK(velocity[1] == Approx(expected_velocity[1]).epsilon(1e-10));
+  CHECK(velocity[2] == Approx(expected_velocity[2]).epsilon(1e-10));
 }
 
 TEST_CASE("WorldBuilder Features: Fault")
