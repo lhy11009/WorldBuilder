@@ -110,7 +110,7 @@ namespace WorldBuilder
           max_depth_surface = Objects::Surface(prm.get("max depth",coordinates));
           max_depth = max_depth_surface.maximum;
           density = prm.get<double>("density");
-          compositions = prm.get_vector<unsigned int>("compositions", this->world->composition_properties);
+          compositions = prm.get_vector<unsigned int>("compositions", this->world->compositions.name_to_index);
           max_water_content = prm.get<double>("initial water content");
           operation = string_operations_to_enum(prm.get<std::string>("operation"));
           cutoff_pressure = prm.get<double>("cutoff pressure");
@@ -209,5 +209,4 @@ namespace WorldBuilder
     } // namespace OceanicPlateModels
   } // namespace Features
 } // namespace WorldBuilder
-
 

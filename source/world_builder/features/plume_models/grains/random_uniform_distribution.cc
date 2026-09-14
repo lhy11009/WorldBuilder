@@ -95,7 +95,7 @@ namespace WorldBuilder
         {
           min_depth = prm.get<double>("min depth");
           max_depth = prm.get<double>("max depth");
-          compositions = prm.get_vector<unsigned int>("compositions", this->world->composition_properties);
+          compositions = prm.get_vector<unsigned int>("compositions", this->world->compositions.name_to_index);
 
           operation = prm.get<std::string>("orientation operation");
           grain_sizes = prm.get_vector<double>("grain sizes");
@@ -214,4 +214,3 @@ namespace WorldBuilder
     } // namespace PlumeModels
   } // namespace Features
 } // namespace WorldBuilder
-

@@ -88,7 +88,7 @@ namespace WorldBuilder
           operation = string_operations_to_enum(prm.get<std::string>("operation"));
           top_fraction = prm.get_vector<double>("top fractions");
           bottom_fraction = prm.get_vector<double>("bottom fractions");
-          compositions = prm.get_vector<unsigned int>("compositions", this->world->composition_properties);
+          compositions = prm.get_vector<unsigned int>("compositions", this->world->compositions.name_to_index);
         }
 
 
@@ -130,4 +130,3 @@ namespace WorldBuilder
     } // namespace SubductingPlateModels
   } // namespace Features
 } // namespace WorldBuilder
-

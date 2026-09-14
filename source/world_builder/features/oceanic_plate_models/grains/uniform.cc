@@ -103,7 +103,7 @@ namespace WorldBuilder
           min_depth = min_depth_surface.minimum;
           max_depth_surface = Objects::Surface(prm.get("max depth",coordinates));
           max_depth = max_depth_surface.maximum;
-          compositions = prm.get_vector<unsigned int>("compositions", this->world->composition_properties);
+          compositions = prm.get_vector<unsigned int>("compositions", this->world->compositions.name_to_index);
 
           const bool set_euler_angles = prm.check_entry("Euler angles z-x-z");
           const bool set_rotation_matrices = prm.check_entry("rotation matrices");
@@ -180,5 +180,4 @@ namespace WorldBuilder
     } // namespace OceanicPlateModels
   } // namespace Features
 } // namespace WorldBuilder
-
 

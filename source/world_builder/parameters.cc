@@ -213,24 +213,19 @@ namespace WorldBuilder
     return Pointer((this->get_full_json_path() + "/" + name).c_str()).Get(parameters) != nullptr;
   }
 
-  std::vector<Parameters::composition_property>
+  Parameters::composition_metadata
   Parameters::get_composition_properties(const std::string &name) const
   {
-    // parse entries as indices linked to names and reference densities
-    // struct data type allows easy extension for more properties in the future
-    std::vector<Parameters::composition_property> cp_output;
+    Parameters::composition_metadata parsed_compositions;
 
     const std::string base = this->get_full_json_path();
     const Value *cp_entries = Pointer((base + "/" + name).c_str()).Get(parameters);
 
     if (cp_entries == nullptr)
-      return cp_output;
+      return parsed_compositions;
 
     WBAssertThrow(cp_entries->IsArray(),
                   "Invalid entry \"" << name << "\": expected an array of objects with required key \"index\" and optional keys \"name\" and \"reference density\".");
-
-    std::map<unsigned int, bool> seen_indexes;
-    cp_output.reserve(cp_entries->Size());
 
     for (SizeType i = 0; i < cp_entries->Size(); ++i)
       {
@@ -238,23 +233,21 @@ namespace WorldBuilder
 
         // index must be unique
         const unsigned int composition_index = entry["index"].GetUint();
-        WBAssertThrow(seen_indexes.find(composition_index) == seen_indexes.end(),
+        const double reference_density = entry.HasMember("reference density") ? entry["reference density"].GetDouble() : Types::CompositionProperty::get_default_reference_density();
+        const auto property_insertion = parsed_compositions.properties.emplace(composition_index,
+                                                                               Parameters::composition_property {reference_density});
+        WBAssertThrow(property_insertion.second,
                       "Duplicate composition index " << composition_index << " in \"" << name << "\".");
-        seen_indexes[composition_index] = true;
 
         // name defaults to index (as string) unless user defined
         const std::string composition_name = entry.HasMember("name") ? entry["name"].GetString() : std::to_string(composition_index);
-
-        // reference density defaults to value in CompositionProperty unless user defined
-        const double reference_density = entry.HasMember("reference density") ? entry["reference density"].GetDouble() : Types::CompositionProperty::get_default_reference_density();
-
-        cp_output.emplace_back(Parameters::composition_property {composition_index,
-                                                                 composition_name,
-                                                                 reference_density
-                                                                });
+        const auto name_insertion = parsed_compositions.name_to_index.emplace(composition_name,
+                                                                              composition_index);
+        WBAssertThrow(name_insertion.second,
+                      "Duplicate composition name " << composition_name << " in \"" << name << "\".");
       }
 
-    return cp_output;
+    return parsed_compositions;
   }
 
 
@@ -1994,7 +1987,7 @@ namespace WorldBuilder
   template<>
   std::vector<unsigned int>
   Parameters::get_vector(const std::string &name,
-                         const std::map<unsigned int, Parameters::composition_property> &composition_properties)
+                         const std::map<std::string, unsigned int> &name_to_index)
   {
     std::vector<unsigned int> vector;
 
@@ -2018,26 +2011,11 @@ namespace WorldBuilder
             else if (entry->IsString())
               {
                 const std::string feature_composition_name = entry->GetString();
-                bool is_found_in_composition_properties = false;
-
-                // composition_properties is a map of index and properties
-                // loop over it to find the name and assign the corresponding index
-                for (const std::pair<const unsigned int, Parameters::composition_property> &global_composition_entry : composition_properties)
-                  {
-                    const Parameters::composition_property &global_composition = global_composition_entry.second;
-                    // compare globally defined composition name
-                    // with feature-defined composition name
-                    // and assign the corresponding index if found
-                    if (global_composition.name == feature_composition_name)
-                      {
-                        vector.push_back(global_composition_entry.first);
-                        is_found_in_composition_properties = true;
-                        break;
-                      }
-                  }
-                WBAssertThrow(is_found_in_composition_properties,
+                const auto composition = name_to_index.find(feature_composition_name);
+                WBAssertThrow(composition != name_to_index.end(),
                               "internal error: could not find the value \"" << feature_composition_name << "\" in the composition properties at: "
                               << this->get_full_json_schema_path() + "/" + name + "/items/enum");
+                vector.push_back(composition->second);
               }
             else
               {
@@ -2781,4 +2759,3 @@ namespace WorldBuilder
 
 
 } // namespace WorldBuilder
-

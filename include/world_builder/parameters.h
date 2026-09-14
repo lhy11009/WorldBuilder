@@ -99,15 +99,20 @@ namespace WorldBuilder
 
       /**
        * A struct to store all properties of a composition.
-       * \param index A unique integer defining the composition and linking to its properties
-       * \param name The name of the composition (optional, default to its index as a string)
        * \param reference_density The reference density of the composition (default to 3300 kg/m^3)
        */
       struct composition_property
       {
-        unsigned int index;
-        std::string name;
         double reference_density;
+      };
+
+      /**
+       * A struct to store composition names and properties by their indices.
+       */
+      struct composition_metadata
+      {
+        std::map<std::string, unsigned int> name_to_index;
+        std::map<unsigned int, composition_property> properties;
       };
 
       /**
@@ -156,11 +161,11 @@ namespace WorldBuilder
       /**
        * A specialized version of get which can return vectors/arrays.
        * \param name The name of the entry to retrieved
-       * \param composition_properties The map of compositions and their properties defined by the user
+       * \param name_to_index The map from user-defined composition names to indices
        */
       template<class T>
       std::vector<T> get_vector(const std::string &name,
-                                const std::map<unsigned int, Parameters::composition_property> &composition_properties);
+                                const std::map<std::string, unsigned int> &name_to_index);
 
       /**
        * A specialized version of get which can return unique pointers.
@@ -204,12 +209,13 @@ namespace WorldBuilder
       check_entry(const std::string &name) const;
 
       /**
-       * Parse composition properties.
-       * The index is required, while name and reference density are optional.
-       * If the entry is absent, the vector is empty.
+       * Parse composition properties into separate name-to-index and
+       * index-to-property maps. The index is required, while name and
+       * reference density are optional. If the entry is absent, both maps
+       * are empty.
        * \param name The name of the entry to be declared
        */
-      std::vector<composition_property>
+      composition_metadata
       get_composition_properties(const std::string &name) const;
 
       /**

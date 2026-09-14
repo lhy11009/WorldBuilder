@@ -80,7 +80,7 @@ namespace WorldBuilder
           min_depth = prm.get<double>("min distance slab top");
           max_depth = prm.get<double>("max distance slab top");
           operation = string_operations_to_enum(prm.get<std::string>("operation"));
-          compositions = prm.get_vector<unsigned int>("compositions", this->world->composition_properties);
+          compositions = prm.get_vector<unsigned int>("compositions", this->world->compositions.name_to_index);
         }
 
 
@@ -104,7 +104,7 @@ namespace WorldBuilder
                 {
                   if (world->properties(position_in_cartesian_coordinates.get_array(), depth, {{{2, compositions[i], 0}}})[0] > 0.0)
                   {
-                    const double density = this->world->composition_properties[compositions[i]].reference_density;
+                    const double density = this->world->compositions.properties[compositions[i]].reference_density;
                     compositional_density += world->properties(position_in_cartesian_coordinates.get_array(), depth, {{{2, compositions[i], 0}}})[0] * density;
                     sum_compositions += world->properties(position_in_cartesian_coordinates.get_array(), depth, {{{2, compositions[i], 0}}})[0];
                   }
@@ -123,5 +123,4 @@ namespace WorldBuilder
     } // namespace SubductingPlateModels
   } // namespace Features
 } // namespace WorldBuilder
-
 

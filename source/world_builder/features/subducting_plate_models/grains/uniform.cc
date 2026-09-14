@@ -93,7 +93,7 @@ namespace WorldBuilder
         {
           min_depth = prm.get<double>("min distance slab top");
           max_depth = prm.get<double>("max distance slab top");
-          compositions = prm.get_vector<unsigned int>("compositions", this->world->composition_properties);
+          compositions = prm.get_vector<unsigned int>("compositions", this->world->compositions.name_to_index);
 
           const bool set_euler_angles = prm.check_entry("Euler angles z-x-z");
           const bool set_rotation_matrices = prm.check_entry("rotation matrices");
@@ -166,5 +166,4 @@ namespace WorldBuilder
     } // namespace SubductingPlateModels
   } // namespace Features
 } // namespace WorldBuilder
-
 

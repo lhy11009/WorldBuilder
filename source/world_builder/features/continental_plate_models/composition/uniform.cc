@@ -94,7 +94,7 @@ namespace WorldBuilder
           max_depth_surface = Objects::Surface(prm.get("max depth",coordinates));
           max_depth = max_depth_surface.maximum;
 
-          compositions = prm.get_vector<unsigned int>("compositions", this->world->composition_properties);
+          compositions = prm.get_vector<unsigned int>("compositions", this->world->compositions.name_to_index);
           fractions = prm.get_vector<double>("fractions");
           operation = string_operations_to_enum(prm.get<std::string>("operation"));
 
@@ -137,5 +137,4 @@ namespace WorldBuilder
     } // namespace ContinentalPlateModels
   } // namespace Features
 } // namespace WorldBuilder
-
 

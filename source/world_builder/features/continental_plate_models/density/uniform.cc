@@ -84,7 +84,7 @@ namespace WorldBuilder
           max_depth_surface = Objects::Surface(prm.get("max depth",coordinates));
           max_depth = max_depth_surface.maximum;
           operation = string_operations_to_enum(prm.get<std::string>("operation"));
-          compositions = prm.get_vector<unsigned int>("compositions", this->world->composition_properties);
+          compositions = prm.get_vector<unsigned int>("compositions", this->world->compositions.name_to_index);
         }
 
         double
@@ -108,7 +108,7 @@ namespace WorldBuilder
                 {
                   if (world->properties(position_in_cartesian_coordinates.get_array(), depth, {{{2, compositions[i], 0}}})[0] > 0.0)
                   {
-                    const double density = this->world->composition_properties[compositions[i]].reference_density;
+                    const double density = this->world->compositions.properties[compositions[i]].reference_density;
                     compositional_density += world->properties(position_in_cartesian_coordinates.get_array(), depth, {{{2, compositions[i], 0}}})[0] * density;
                     sum_compositions += world->properties(position_in_cartesian_coordinates.get_array(), depth, {{{2, compositions[i], 0}}})[0];
                   }
@@ -127,4 +127,3 @@ namespace WorldBuilder
     } // namespace ContinentalPlateModels
   } // namespace Features
 } // namespace WorldBuilder
-
