@@ -88,6 +88,7 @@ namespace WorldBuilder
 
         std::array<double,3>
         UniformRaw::get_velocity(const Point<3> & /*position_in_cartesian_coordinates*/,
+                                 const Objects::NaturalCoordinate & /*position_in_natural_coordinates*/,
                                  const double  /*depth*/,
                                  const double  /*gravity*/,
                                  std::array<double,3> velocity_,
